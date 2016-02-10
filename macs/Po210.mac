@@ -1,0 +1,32 @@
+#  File:       Po210.mac
+#  Process:    Alpha
+#
+#  Date:       06/12/2012 (E O'Sullivan)
+#  Contact:    V Lozza, <valentina.lozza@tu-dresden.de>
+#  Revisions:  05/12/2012, P Jones, New File
+#   	       24/10/2014, V Lozza Changed timing
+#
+#      Po210 background
+#
+/rat/physics_list/OmitMuonicProcesses true
+
+/run/initialize
+##########EVENT LOOP############
+/rat/proc frontend
+/rat/proc trigger
+/rat/proc eventbuilder
+/rat/proc calibratePMT
+
+/rat/proc scintFitter
+
+/rat/proc outntuple
+#/rat/proclast outroot
+##########EVENT LOOP############
+/generator/add decaychain 210Po:fill:poisson:alpha
+/generator/pos/set 0 0 0
+# Rate based on max events per 1 year run 
+# To run 0.01x physics rate (0.01x7.8e8 events/yr) 392 run
+/generator/rate/set 0.000634
+
+/rat/run/start
+exit

@@ -2,8 +2,8 @@
 void plot(){
 
 	gStyle->SetOptStat(0);
-	TFile * Bi210 = TFile::Open("Bi210_100.root");
-	TFile * Po210 = TFile::Open("Po210_100.root");
+	TFile * Bi210 = TFile::Open("output/Bi210_100.root");
+	TFile * Po210 = TFile::Open("output/Po210_100.root");
 	TTree* Bi210Tree = (TTree*) Bi210->Get("output");
 	TTree* Po210Tree = (TTree*) Po210->Get("output");
 	Double_t Bi_ab, Po_ab;

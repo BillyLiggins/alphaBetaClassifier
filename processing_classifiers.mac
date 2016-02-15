@@ -1,0 +1,35 @@
+# File: inroot.mac
+# Brief: Macro showing how to load a root file and run processoers on the data
+#
+# Date: 2014-07-24
+# Contact: P G Jones, <p.g.jones@qmul.ac.uk>
+# Revisions:
+#
+# This macro demostrates how to load a root file called input.root and run
+# processors on it including output to a root file called output.root.
+
+
+#/rat/inroot/load /data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi210/SolarBi210_r3_s0_p2.ntuple.root
+/rat/inroot/load /data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi210/root/SolarBi210_r14_s0_p0.root
+/run/initialize
+
+# BEGIN EVENT LOOP
+/rat/proc count # An example processor
+/rat/procset update 50
+
+/rat/proc scintFitter
+/rat/proc classifier
+/rat/procset classifier "BerkeleyAlphaBeta"
+/rat/procset seed "scintFitter"
+
+/rat/proclast outntuple
+/rat/procset file "test.ntuple.root"
+
+#/rat/procset file "BiPo212-500.ntuple.root"
+#/rat/procset file "BiPo214-500.ntuple.root"
+#/rat/procset file "output.root"
+# END EVENT LOOP
+
+/rat/inroot/read
+
+exit

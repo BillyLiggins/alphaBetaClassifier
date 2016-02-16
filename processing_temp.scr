@@ -1,0 +1,10 @@
+#$ -S /bin/bash
+cd $TMPDIR
+
+source /data/snoplus/softwareSL6/env_rat-5.3.0.sh
+
+rat -l /data/snoplus/liggins/year1/fitting/alphaBetaClassifier/logs/ /data/snoplus/liggins/year1/fitting/alphaBetaClassifier/processing_Bipo212_46.mac 
+
+cp BiPo212_FromOP_140.ntuple.root /data/snoplus/liggins/year1/fitting/alphaBetaClassifier/output/
+
+echo  Job Myjob Done

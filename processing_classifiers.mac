@@ -23,7 +23,6 @@
 /rat/procset seed "scintFitter"
 
 /rat/proclast outntuple
-/rat/procset file "test.ntuple.root"
 
 #/rat/procset file "BiPo212-500.ntuple.root"
 #/rat/procset file "BiPo214-500.ntuple.root"

@@ -1,0 +1,6 @@
+You found a problem in you macro so you are running the processing run again. qstat to check... also you should check the log file for [NewPDF]
+
+
+23/02/2015: 	You have run the recoordination and found a plot but you are going to recoordinate the alpha at a highier energy.
+		The production of data is running and should take ~4 hours. 
+

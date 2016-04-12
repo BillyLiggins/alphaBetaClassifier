@@ -27,6 +27,9 @@
 #include <iostream>
 #include <fstream>
 
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+                     ( std::ostringstream() << std::dec << x ) ).str()
+
 
 string partflag="";
 
@@ -85,6 +88,80 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,ofstream& outputfile){
 	}
 
 }
+
+
+void findCuts(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& mistagged_frac){
+	/* This function should take a 2d histrogram split it into energy 
+	 * strips and then find a cut value which retain ~99% of the signal.
+	 */
+	//for(double energy =0; energy<3.5;energy+=0.1){
+
+	double startingCut=-1000;
+	double step=0.1;
+	double cutValue=startingCut;
+	double accept=0;
+	double mistagged=0;
+	double mistagging_fraction=0;
+	double sliceWidth=0.1;
+	double threshold=0.995;
+	TAxis* bi_x=compareBi210->GetXaxis();
+	TAxis* bi_y=compareBi210->GetYaxis();
+	TAxis* po_x=comparePo210->GetXaxis();
+	TAxis* po_y=comparePo210->GetYaxis();
+
+	TH1D* complete_bi=compareBi210->ProjectionY("complete_bi",bi_x->FindBin(0.),bi_x->FindBin(4.));
+	TH1D* complete_po=comparePo210->ProjectionY("complete_po",po_x->FindBin(0.),po_x->FindBin(4.));
+	double bi_numEV_complete= compareBi210->GetEntries();
+	double po_numEV_complete= comparePo210->GetEntries();
+	cout<<"Number of entries in complete bi = "<< bi_numEV_complete<<endl;
+	cout<<"Number of entries in complete po = "<< po_numEV_complete<<endl;
+
+	for(double energy =0; energy<1.7;energy+=0.1){
+		cout<<"Energy = "<< energy<<endl;
+
+		//TH1D* slice_bi=compareBi210->ProjectionY("slice_bi",bi_x->FindBin(0.5),bi_x->FindBin(1.0));
+		TH1D* slice_bi=compareBi210->ProjectionY(SSTR(energy).c_str(),bi_x->FindBin(energy),bi_x->FindBin(energy+sliceWidth));
+		TH1D* slice_po=comparePo210->ProjectionY(("Po"+SSTR(energy)).c_str(),po_x->FindBin(energy),po_x->FindBin(energy+sliceWidth));
+
+		double bi_numEV=slice_bi->GetEntries();
+		double po_numEV=slice_po->GetEntries();
+		cout<<"Number of entries in bi slice = "<< bi_numEV<<endl;
+		cout<<"Number of entries in po slice = "<< po_numEV<<endl;
+		TAxis* bi_slice_x=slice_bi->GetXaxis();
+		TAxis* po_slice_x=slice_po->GetXaxis();
+
+		while(accept<threshold){
+
+			double bi_remain=slice_bi->Integral(bi_slice_x->FindBin(startingCut),bi_slice_x->FindBin(cutValue+=step));
+			//double po_remain=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(startingCut+step));
+			cout<<"Number of entries remaining in bi slice = "<< bi_remain<<endl;
+			//cout<<"Number of entries remaining in po slice = "<< po_remain<<endl;
+			accept=bi_remain/bi_numEV;	
+			cout<<"Accepted fraction = "<<accept<<endl;
+		}
+		mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
+
+		mistagging_fraction= mistagged/po_numEV;
+		cout<<mistagged<<" events were mistagged. "<<mistagging_fraction<<" as a fraction."<<endl;
+		mistagged_frac.push_back(mistagging_fraction);
+		cutValues.push_back(cutValue);
+		energyValues.push_back(energy+0.05);
+
+//		TCanvas* c1 = new TCanvas();
+//		c1->cd();
+//		//TLine* cutLine = new TLine( cutValue, slice_bi->GetYaxis()->GetXmin(), cutValue, slice_bi->GetYaxis()->GetXmax() );
+//		TLine* cutLine = new TLine( cutValue, slice_bi->GetMinimum(), cutValue, slice_bi->GetMaximum() );
+//		cutLine->SetLineWidth(2);cutLine->SetLineStyle(4);
+//		slice_bi->Draw();
+//		slice_po->Draw("same");
+//		cutLine->Draw("same");
+
+		cutValue=startingCut;
+		accept=0;
+	}
+
+}
+
 int main(){
 	
 	gStyle->SetOptStat(0);
@@ -168,28 +245,41 @@ int main(){
 	File_bi.close();
 	File_po.close();
 
-	TCanvas * c1 = new TCanvas();
-	hBlank->SetMaximum(0.3);
-	hBlank->SetTitle("Standard Classifiers From Production 5.3");
-	//hBlank->SetTitle("Classifers Recoordinated with 1 MeV #beta & 5 MeV #alpha");
-	//hBlank->SetTitle("Classifers Recoordinated with 5 MeV #beta & 50 MeV #alpha");
-	hBlank->Draw();
-	cout<<"# of entries in hBi210 = "<< hBi210->GetEntries()<<endl;
-	cout<<"# of entries in hPo210 = "<< hPo210->GetEntries()<<endl;
-	hBi210->DrawNormalized("same");
-	hPo210->DrawNormalized("same");
+	vector<double> bi_cuts, energyValues,misstagging_frac;
+	findCuts(compareBi210,comparePo210,energyValues,bi_cuts,misstagging_frac);
+	for( int i =0; i<bi_cuts.size();i++){
+		cout<<i<<"th cut value = "<<bi_cuts[i]<<endl;
+		cout<<"The fraction of mistagged events = "<<misstagging_frac[i]<<endl;
+	}
+	TGraph* cutGraph = new TGraph(bi_cuts.size(),&energyValues[0],&bi_cuts[0]);
+	TF1 *f = new TF1("f", "[1]*x +[0]");
+	cutGraph->Fit(f);
 
-	t1->AddEntry( hBi210, "Bi 212","f");
-	t1->AddEntry( hPo210, "Po 212","f");
-	t1->Draw();
-	//c1->Print("BerkeleyAlphaBeta_NormalWithRAT5_3.png");
-	//c1->Print("output2.png");
-	//c1->Print("production_5_3.png");
-	c1->Print("StandardClassifersFromProduction5_3_212.png");
-	//c1->Print("StandardClassifersFromProduction5_3.png");
-	//c1->Print("RecoodinatedClassifiers_1MeV_beta_5MeV_alpha.png");
-	//c1->Print("RecoodinatedClassifiers_5MeV_beta_50MeV_alpha.png");
 
+
+
+//	TCanvas * c1 = new TCanvas();
+//	hBlank->SetMaximum(0.3);
+//	hBlank->SetTitle("Standard Classifiers From Production 5.3");
+//	//hBlank->SetTitle("Classifers Recoordinated with 1 MeV #beta & 5 MeV #alpha");
+//	//hBlank->SetTitle("Classifers Recoordinated with 5 MeV #beta & 50 MeV #alpha");
+//	hBlank->Draw();
+//	cout<<"# of entries in hBi210 = "<< hBi210->GetEntries()<<endl;
+//	cout<<"# of entries in hPo210 = "<< hPo210->GetEntries()<<endl;
+//	hBi210->DrawNormalized("same");
+//	hPo210->DrawNormalized("same");
+//
+//	t1->AddEntry( hBi210, "Bi 212","f");
+//	t1->AddEntry( hPo210, "Po 212","f");
+//	t1->Draw();
+//	//c1->Print("BerkeleyAlphaBeta_NormalWithRAT5_3.png");
+//	//c1->Print("output2.png");
+//	//c1->Print("production_5_3.png");
+//	c1->Print("StandardClassifersFromProduction5_3_212.png");
+//	//c1->Print("StandardClassifersFromProduction5_3.png");
+//	//c1->Print("RecoodinatedClassifiers_1MeV_beta_5MeV_alpha.png");
+//	//c1->Print("RecoodinatedClassifiers_5MeV_beta_50MeV_alpha.png");
+//
 	TCanvas * c2 = new TCanvas();
 	cout<<"# of entries in hBi210 = "<< hBi210->GetEntries()<<endl;
 	cout<<"# of entries in hPo210 = "<< hPo210->GetEntries()<<endl;
@@ -198,18 +288,26 @@ int main(){
 	compareBi210->GetYaxis()->SetTitle("BerkeleyAlphaBeta");
 	compareBi210->Draw();
 	comparePo210->Draw("same");
+	//cutGraph->Draw("AP*1");
+	cutGraph->Draw("* same");
 
 	t2->AddEntry( compareBi210, "Bi 210","f");
 	t2->AddEntry( comparePo210, "Po 210","f");
 	t2->Draw();
-	c2->Print("compareBerkeleyAlphaBetaVsMCEnergy.png");
+	c2->Print("compareBerkeleyAlphaBetaVsMCEnergy_withCuts.png");
+	TCanvas* c3 = new TCanvas();
+	TGraph* mistaggedGraph = new TGraph(bi_cuts.size(),&energyValues[0],&misstagging_frac[0]);
+	//TF1 *f = new TF1("f", "[1]*x +[0]");
+	//cutGraph->Fit(f);
+	mistaggedGraph->Draw();
 
-
-	TFile fileout("plot.root","RECREATE");
-	fileout.cd();
-	hBi210->Write();
-	hPo210->Write();
-	fileout.Close();
+//
+//
+//	TFile fileout("plot.root","RECREATE");
+//	fileout.cd();
+//	hBi210->Write();
+//	hPo210->Write();
+//	fileout.Close();
 	return 0;
 
 }

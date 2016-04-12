@@ -8,9 +8,10 @@
 # This macro demostrates how to load a root file called input.root and run
 # processors on it including output to a root file called output.root.
 
+#/rat/db/load /data/snoplus/liggins/year1/fitting/alphaBetaClassifier/CLASSIFIER_BERKELEY_AB.labppo_scintillator.ratdb 
+/rat/db/load /data/snoplus/liggins/year1/fitting/alphaBetaClassifier/CLASSIFIER_BERKELEY_AB.labppo_scintillator_5MeV_beta_50_MeV_alpha.ratdb
 
 #/rat/inroot/load /data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi210/SolarBi210_r3_s0_p2.ntuple.root
-/rat/inroot/load /data/snoplus/OfficialProcessing/production_5_0/Solar_5.0.1/Bi210/root/SolarBi210_r14_s0_p0.root
 /run/initialize
 
 # BEGIN EVENT LOOP
@@ -19,7 +20,7 @@
 
 /rat/proc scintFitter
 /rat/proc classifier
-/rat/procset classifier "BerkeleyAlphaBeta"
+/rat/procset classifier "BerkeleyAlphaBeta-AB_PDF_CUSTOM[NewPDF]"
 /rat/procset seed "scintFitter"
 
 /rat/proclast outntuple

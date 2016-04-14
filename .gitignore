@@ -1,6 +1,12 @@
 
 *.log
+*.png
+*.dat
 *.scr.e*
 *.scr.o*
 macs/*
 output/*
+scripts/*
+hello*
+*.so
+*.d

@@ -64,7 +64,7 @@ vector<string> glob( const string& path, const string& start )
 }
 
 
-void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRadial,ofstream& outputfile){
+void FillHist(TFile* file,TH1D * hist){
 
 	TTree* Tree = (TTree*) file->Get("output");
 	Double_t para, mcEdepQuenched,posr;
@@ -92,11 +92,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 			code=1000020040;
 		}
 		if( Qfit && pdg1==code  ){
-			hist->Fill(para);
-			hist2->Fill(mcEdepQuenched,para);
-			radial->Fill(posr);
-			compareRadial->Fill(posr,para);
-			outputfile<< mcEdepQuenched<<","<<posr<<","<< para << endl;
+			hist->Fill(mcEdepQuenched);
 		}
 	}
 
@@ -261,165 +257,58 @@ void findCutsRadial(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energy
 int main(){
 //====================================================================	
 	gStyle->SetOptStat(0);
-	TH1D *hBi210   = new TH1D("hBi210","berkeleyAlphaBeta",100,-100,100);
-	hBi210->SetLineColor(kBlue);hBi210->SetLineWidth(3);
-	hBi210->SetFillColor(kBlue);
-	TH1D *hPo210   = new TH1D("hPo210","berkeleyAlphaBeta",100,-100,100);
-	hPo210->SetLineColor(kRed);hPo210->SetLineWidth(3);
-	TH1D *hBlank   = new TH1D("hBlank","berkeleyAlphaBeta",100,-100,100);
 
-	TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",100,0,2.5,260,-160,100);
-	compareBi210->SetLineColor(kBlue);compareBi210->SetLineWidth(3);
-	compareBi210->SetMarkerColor(kBlue);
-	compareBi210->SetFillColor(kBlue);
-	TH2D* comparePo210   = new TH2D("comparePo210","berkeleyAlphaBeta",100,0,2.5,260,-160,100);
-	comparePo210->SetLineColor(kRed);comparePo210->SetLineWidth(3);
-	comparePo210->SetMarkerColor(kRed);
-	comparePo210->SetFillColor(kRed);
-
-//==========================Radial Histrograms ========================
-	TH1D *hEle_radial   = new TH1D("hEle_radial","berkeleyAlphaBeta",6000,0,6000);
-	hEle_radial->SetLineColor(kBlue);hEle_radial->SetLineWidth(3);
-	hEle_radial->SetFillColor(kBlue);
-	TH1D *hAlpha_radial   = new TH1D("hAlpha_radial","berkeleyAlphaBeta",6000,0,6000);
-	hAlpha_radial->SetLineColor(kRed);hAlpha_radial->SetLineWidth(3);
-
-	TH2D* compareEle_radial  = new TH2D("compareEle_radial","berkeleyAlphaBeta",6000,0,6000,460,-260,200);
-	compareEle_radial->SetLineColor(kBlue);compareEle_radial->SetLineWidth(3);
-	compareEle_radial->SetMarkerColor(kBlue);
-	compareEle_radial->SetFillColor(kBlue);
-	TH2D* compareAlpha_radial   = new TH2D("compareAlpha_radial","berkeleyAlphaBeta",6000,0,6000,460,-260,200);
-	compareAlpha_radial->SetLineColor(kRed);compareAlpha_radial->SetLineWidth(3);
-	compareAlpha_radial->SetMarkerColor(kRed);
-	compareAlpha_radial->SetFillColor(kRed);
-	//TH2D *hBlank2   = new TH2D("hBlank2","berkeleyAlphaBeta",100,-100,100);
+	TH1D *hist_blanck_beta= new TH1D("hist_blanck_beta","mcEdepQuenched",1000,0,2.6);
+	TH1D *hist_blanck_alpha= new TH1D("hist_blanck_alpha","mcEdepQuenched",1000,0,2.6);
 	
-	TLegend* t1 = new TLegend( 0.6, 0.7, 0.89, 0.88 );
-	TLegend* t2 = new TLegend( 0.11, 0.11, 0.21, 0.21 );
-	TLegend* t3 = new TLegend( 0.11, 0.11, 0.21, 0.21 );
+	TLegend* t2 = new TLegend( 0.6, 0.7, 0.89, 0.88 );
 	
-	ofstream File_bi;
-	ofstream File_po;
-	
-	File_bi.open("Classifier_data_bi.dat");
-	File_po.open("Classifier_data_po.dat");
-
-	File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" <<  endl;
-	File_po << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" << endl;
 
 	vector<string>  biFileList= glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
 	vector<string> poFileList= glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
 
+	TCanvas * c2 = new TCanvas();
+	c2->cd();
+	hist_blanck_beta->SetTitle("#beta across mcEdepQuenched");
+	hist_blanck_beta->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
+
+	hist_blanck_beta->Draw();
+
 	for( int i=0; i<biFileList.size(); i++ ){
+		TH1D *hist_beta= new TH1D("hist_beta","#beta across mcEdepQuenched",200,0,2.6);
+		hist_beta->SetLineColor(kBlue);//hist_beta->SetLineWidth(3);
+		/* hist_beta->SetFillColor(kBlue); */
+
 		TFile * file= TFile::Open(biFileList[i].c_str());	
 		partflag="Bi";
-		FillHist( file, hBi210,compareBi210,hEle_radial,compareEle_radial,File_bi);
+		FillHist( file,hist_beta);
+		if(i==0) hist_beta->Draw();
+		hist_beta->Draw("same");
 	  }
 
-	for( int i=0; i<poFileList.size(); i++ ){
-		TFile * file= TFile::Open(poFileList[i].c_str());	
-		partflag="Po";
-		FillHist( file, hPo210,comparePo210,hEle_radial,compareAlpha_radial,File_po);
-	  }
-	File_bi.close();
-	File_po.close();
-
-	vector<double> bi_cuts, energyValues,Rejection_energy;
-	vector<double> radial_cuts, RadiusValues,Rejection_radius;
-
-	findCutsEnergy(compareBi210,comparePo210,energyValues,bi_cuts,Rejection_energy);
-	findCutsRadial(compareEle_radial,compareAlpha_radial,RadiusValues,radial_cuts,Rejection_radius);
-// ----Finding Rejection Powers---------
-	
-
-//------Drawing and saving---------------
-
-
-	TGraph* cutGraph = new TGraph(bi_cuts.size(),&energyValues[0],&bi_cuts[0]);
-	TF1 *f = new TF1("f_Rad", "[2]*x*x+[1]*x +[0]");
-	cutGraph->Fit(f);
-
-	TGraph* cutGraph_radial = new TGraph(radial_cuts.size(),&RadiusValues[0],&radial_cuts[0]);
-	TF1 *f_Rad = new TF1("f_Rad", "[1]*x +[0]");
-	cutGraph_radial->Fit(f_Rad);
-
-
-
-	TCanvas * c2 = new TCanvas();
-	cout<<"# of entries in hBi210 = "<< hBi210->GetEntries()<<endl;
-	cout<<"# of entries in hPo210 = "<< hPo210->GetEntries()<<endl;
-	compareBi210->SetTitle("Classifiers values across truth quenched energy");
-	compareBi210->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
-	compareBi210->GetYaxis()->SetTitle("BerkeleyAlphaBeta");
-	compareBi210->Draw();
-	comparePo210->Draw("same");
-	/* compareBi210->Draw("box"); */
-	/* comparePo210->Draw("same box"); */
-	/* compareBi210->Draw("surf"); */
-	/* comparePo210->Draw("same surf"); */
-	//cutGraph->Draw("AP*1");
-	cutGraph->Draw("* same");
-
-	t2->AddEntry( compareBi210, "#beta 's","f");
-	t2->AddEntry( comparePo210, "#alpha 's","f");
-	t2->Draw();
-	c2->Print("BerkeleyAlphaBetaVsMCEnergy_withCuts.png");
-
-	TCanvas* RejectionEnergy_can = new TCanvas();
-	TGraph* RejectionEnergyGraph = new TGraph(bi_cuts.size(),&energyValues[0],&Rejection_energy[0]);
-	//TF1 *f = new TF1("f", "[1]*x +[0]");
-	//cutGraph->Fit(f);
-	RejectionEnergyGraph->SetTitle("Rejection in across energy");
-	RejectionEnergyGraph->GetXaxis()->SetTitle("Energy (MeV)");
-	RejectionEnergyGraph->GetYaxis()->SetTitle("Rejection");
-	RejectionEnergyGraph->Draw();
-	RejectionEnergy_can->Print("RejectionAcrossEnergy.png");
+	c2->Print("betaEnergies.png");
 
 	TCanvas * c3 = new TCanvas();
-	cout<<"# of entries in hBi210 = "<< hBi210->GetEntries()<<endl;
-	cout<<"# of entries in hPo210 = "<< hPo210->GetEntries()<<endl;
-	compareEle_radial->SetTitle("Classifier values across recostructed radius");
-	compareEle_radial->GetXaxis()->SetTitle("posr (mm)");
-	compareEle_radial->GetYaxis()->SetTitle("BerkeleyAlphaBeta");
-	compareEle_radial->Draw();
-	compareAlpha_radial->Draw("same");
-	//cutGraph->Draw("AP*1");
-	cutGraph_radial->Draw("* same");
+	c3->cd();
+	hist_blanck_alpha->SetTitle("#alpha across mcEdepQuenched");
+	hist_blanck_alpha->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
 
-	t3->AddEntry( compareBi210, "#beta 's","f");
-	t3->AddEntry( comparePo210, "#alpha 's","f");
-	t3->Draw();
-	c3->Print("compareBerkeleyAlphaBetaVsPosr_withCuts.png");
+	hist_blanck_alpha->Draw();
+	for( int i=0; i<poFileList.size(); i++ ){
+		TH1D *hist_alpha= new TH1D("hist_alpha","#alpha across mcEdepQuenched",200,0,2.6);
+		hist_alpha->SetLineColor(kBlue);
+		/* hist_alpha->SetLineWidth(3); */
+		/* hist_alpha->SetFillColor(kBlue); */
 
-	TCanvas* RejectionRadial_can= new TCanvas();
-	TGraph* RejectionRadialGraph = new TGraph(radial_cuts.size(),&RadiusValues[0],&Rejection_radius[0]);
-	double TotalRejectionInPosr=std::accumulate(Rejection_radius.begin(), Rejection_radius.end(), 0);
-	cout<<"Total Rejection = "<<TotalRejectionInPosr<<endl;
+		TFile * file= TFile::Open(poFileList[i].c_str());	
+		partflag="Po";
+		FillHist( file,hist_alpha);
+		if(i==0) hist_alpha->Draw();
+		hist_alpha->Draw("same");
+	  }
 
-	TPaveText *pt = new TPaveText(500,500,2500,900,"NB");
-	pt->AddText(("Total Rejection = "+SSTR(TotalRejectionInPosr)+".").c_str());
-	RejectionRadialGraph->SetTitle("Rejection across posr");
-	RejectionRadialGraph->GetXaxis()->SetTitle("posr (mm)");
-	RejectionRadialGraph->GetYaxis()->SetTitle("Rejection");
-	RejectionRadialGraph->Draw();
-	pt->Draw();
-	RejectionRadialGraph->SetMaximum(1000);
-	RejectionRadial_can->Print("RejectionAcrossRadius.png");
+	c3->Print("alphaEnergies.png");
 
-
-	TFile fileout("BerkeleyAlphaBetaTraditionalCutPlots.root","RECREATE");
-	fileout.cd();
-// 	-----Energy-----
-	compareBi210->Write();
-	comparePo210->Write();
-	RejectionEnergyGraph->Write();
-	RejectionEnergy_can->Write();
-// 	-----Radial-----
-	compareEle_radial->Write();
-	compareAlpha_radial->Write();
-	RejectionRadialGraph->Write();
-	RejectionRadial_can->Write();
-	fileout.Close();
 
 	return 0;
 

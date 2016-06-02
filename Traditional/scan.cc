@@ -259,7 +259,7 @@ double findCutsEnergy_reverse(TH2D *compareBi210,TH2D *comparePo210, double thre
 }
 
 
-int main(){
+int scan(){
 //====================================================================	
 	gStyle->SetOptStat(0);
 	TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",13,0,2.6,260,-160,100);
@@ -298,19 +298,19 @@ int main(){
 	vector<double> bi_cuts, energyValues,Rejection_energy;
 	vector<double> radial_cuts, RadiusValues,Rejection_radius;
 
-	/* vector<double> eff,rej; */
-	/* for(double i=0.95;i<1;i+=0.002){ */
-	/* 	cout<<"Finding Cut for eff = "<<i<<endl; */
-	/* 	double TotRej=findCutsEnergy(compareBi210,comparePo210,i); */
-	/* 	eff.push_back(i); */
-	/* 	rej.push_back(TotRej); */
+	vector<double> eff,rej;
+	for(double i=0.90;i<1;i+=0.001){
+		cout<<"Finding Cut for eff = "<<i<<endl;
+		double TotRej=findCutsEnergy(compareBi210,comparePo210,i);
+		eff.push_back(i);
+		rej.push_back(TotRej);
 		
-	/* } */
+	}
 		
 	vector<double> energyValues_rev,cuts_rev;
 	vector<double> eff_rev,rej_rev;
 	vector<TGraph*> graphs;
-	for(double i=0.95;i<1;i+=0.002){
+	for(double i=0.90;i<1;i+=0.001){
 		cout<<"Finding Cut for eff_rev = "<<i<<endl;
 		double TotRej=findCutsEnergy_reverse(compareBi210,comparePo210,i,energyValues_rev,cuts_rev);
 		graphs.push_back(new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]));
@@ -325,20 +325,20 @@ int main(){
 
 //------Drawing and saving---------------
 
-	/* TCanvas * c1= new TCanvas(); */
-	/* TGraph* RejectionGraph = new TGraph(eff.size(),&eff[0],&rej[0]); */
-	/* /1* TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]"); *1/ */
-	/* /1* cutGraph->Fit(f); *1/ */
-	/* RejectionGraph ->SetTitle("Rejection Across Efficiency"); */
-	/* RejectionGraph ->GetXaxis()->SetTitle("Efficiency on #beta"); */
-	/* RejectionGraph ->GetYaxis()->SetTitle("Rejection of #alpha"); */
-	/* RejectionGraph ->Draw("a*"); */
-	/* c1->Print("RejectionVsEfficiency_alpha.png"); */
+	TCanvas * c1= new TCanvas();
+	TGraph* RejectionGraph = new TGraph(eff.size(),&eff[0],&rej[0]);
+	TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+	RejectionGraph ->Fit(f);
+	RejectionGraph ->SetTitle("Rejection Across Efficiency");
+	RejectionGraph ->GetXaxis()->SetTitle("Efficiency on #beta");
+	RejectionGraph ->GetYaxis()->SetTitle("Rejection of #alpha");
+	RejectionGraph ->Draw("a*");
+	c1->Print("RejectionVsEfficiency_alpha.png");
 
 	TCanvas * c2= new TCanvas();
 	TGraph* RejectionGraph_rev = new TGraph(eff_rev.size(),&eff_rev[0],&rej_rev[0]);
-	/* TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]"); */
-	/* cutGraph->Fit(f); */
+	TF1 *f2 = new TF1("f2", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+	RejectionGraph_rev ->Fit(f2);
 	RejectionGraph_rev ->SetTitle("Rejection Across Efficiency");
 	RejectionGraph_rev ->GetXaxis()->SetTitle("Efficiency on #alpha");
 	RejectionGraph_rev ->GetYaxis()->SetTitle("Rejection of #beta");
@@ -349,8 +349,8 @@ int main(){
 	c3->cd();
 
 	TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]);
-        TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
-        cutGraph->Fit(f);
+        TF1 *f3 = new TF1("f3", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+        cutGraph->Fit(f3);
 	compareBi210->Draw();	
 	comparePo210->Draw("same");	
 	/* for(int j=0;j<graphs.size();j++){ */
@@ -358,11 +358,12 @@ int main(){
 	/* } */
 	cutGraph->Draw("a* same");
 
+	c3->Print("CutValue_rev.png");
 
-	TFile fileout("RejectionsAndEfficiency.root","UPDATE");
+	TFile fileout("RejectionsAndEfficiency.root","RECREATE");
 	fileout.cd();
 // 	-----Energy-----
-	/* RejectionGraph->Write(); */
+	RejectionGraph->Write();
 	RejectionGraph_rev->Write();
 // 	-----Radial-----
 	/* compareEle_radial->Write(); */

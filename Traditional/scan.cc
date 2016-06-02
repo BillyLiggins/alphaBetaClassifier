@@ -348,15 +348,15 @@ int main(){
 	TCanvas * c3=new TCanvas();
 	c3->cd();
 
-	/* TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]); */
-        /* TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]"); */
-        //cutGraph->Fit(f);
+	TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]);
+        TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+        cutGraph->Fit(f);
 	compareBi210->Draw();	
 	comparePo210->Draw("same");	
 	/* for(int j=0;j<graphs.size();j++){ */
 	/* 	graphs[j]->Draw("a* same"); */
 	/* } */
-	//cutGraph->Draw("a* same");
+	cutGraph->Draw("a* same");
 
 
 	TFile fileout("RejectionsAndEfficiency.root","UPDATE");

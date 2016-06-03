@@ -262,11 +262,11 @@ double findCutsEnergy_reverse(TH2D *compareBi210,TH2D *comparePo210, double thre
 int scan(){
 //====================================================================	
 	gStyle->SetOptStat(0);
-	TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",13,0,2.6,260,-160,100);
+	TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",26,0,2.6,260,-160,100);
 	compareBi210->SetLineColor(kBlue);compareBi210->SetLineWidth(3);
 	compareBi210->SetMarkerColor(kBlue);
 	compareBi210->SetFillColor(kBlue);
-	TH2D* comparePo210   = new TH2D("comparePo210","berkeleyAlphaBeta",13,0,2.6,260,-160,100);
+	TH2D* comparePo210   = new TH2D("comparePo210","berkeleyAlphaBeta",26,0,2.6,260,-160,100);
 	comparePo210->SetLineColor(kRed);comparePo210->SetLineWidth(3);
 	comparePo210->SetMarkerColor(kRed);
 	comparePo210->SetFillColor(kRed);
@@ -334,6 +334,20 @@ int scan(){
 	RejectionGraph ->GetYaxis()->SetTitle("Rejection of #alpha");
 	RejectionGraph ->Draw("a*");
 	c1->Print("RejectionVsEfficiency_alpha.png");
+
+	std::vector<double> percent;
+	for (int i = 0; i < eff.size(); i++) {
+		percent.push_back(100/rej[i]);	
+	}
+	TGraph* PercentageGraph = new TGraph(percent.size(),&eff[0],&percent[0]);
+	TF1 *f_percent_alpha = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+	PercentageGraph ->Fit(f_percent_alpha);
+	PercentageGraph ->SetTitle("Percentage Of #alpha's Remaining Across Efficiency");
+	PercentageGraph ->GetXaxis()->SetTitle("Efficiency on #beta");
+	PercentageGraph ->GetYaxis()->SetTitle("Percentage Remaining");
+	PercentageGraph ->Draw("a*");
+	c1->SetLogy();
+	c1->Print("PercentageVsEfficiency_alpha.png");
 
 	TCanvas * c2= new TCanvas();
 	TGraph* RejectionGraph_rev = new TGraph(eff_rev.size(),&eff_rev[0],&rej_rev[0]);

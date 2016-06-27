@@ -16,6 +16,7 @@
 #include <TH2D.h>
 #include <TFrame.h>
 #include <TGraph.h>
+#include <TGraphErrors.h>
 #include <TPaveText.h>
 #include <TCanvas.h>
 #include <TSystemDirectory.h>
@@ -69,7 +70,7 @@ void FillHist(TFile* file,TH2D * hist2){
 	TTree* Tree = (TTree*) file->Get("output");
 	Double_t para, mcEdepQuenched,posr;
 	Bool_t  Qfit;
-	Int_t pdg1, pdg2;
+	Int_t pdg1, pdg2, evIndex;
         Int_t parentpdg1,parentpdg2;
 
         Tree->SetBranchAddress("pdg1",&pdg1);
@@ -81,6 +82,7 @@ void FillHist(TFile* file,TH2D * hist2){
 	Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
 	Tree->SetBranchAddress("posr",&posr);
 	Tree->SetBranchAddress("fitValid",&Qfit);
+	Tree->SetBranchAddress("evIndex",&evIndex);
 	Int_t n = (Int_t)Tree->GetEntries();
 	Int_t code;
 
@@ -91,14 +93,14 @@ void FillHist(TFile* file,TH2D * hist2){
 		}else if( partflag=="Po"){
 			code=1000020040;
 		}
-		if( Qfit && pdg1==code  ){
+		if( Qfit && evIndex==0 && posr<5900  ){
 			hist2->Fill(mcEdepQuenched,para);
 		}
 	}
 
 }
 
-double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold){
+double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold,std::vector<double>& rej_vect){
 	/* This function returns the total rejection for a threshold.
 	 */
 
@@ -112,9 +114,9 @@ double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold){
 	double minBin=compareBi210->GetXaxis()->GetXmin();
 	double maxBin=compareBi210->GetXaxis()->GetXmax();
 	double sliceWidth=compareBi210->GetXaxis()->GetBinWidth(1);
-	cout<<"minBin = "<<minBin<<endl;
-	cout<<"maxBin = "<<maxBin<<endl;
-	cout<<"sliceWidth = "<<sliceWidth<<endl;
+	/* cout<<"minBin = "<<minBin<<endl; */
+	/* cout<<"maxBin = "<<maxBin<<endl; */
+	/* cout<<"sliceWidth = "<<sliceWidth<<endl; */
 	//double threshold=0.995;
 	TAxis* bi_x=compareBi210->GetXaxis();
 	TAxis* bi_y=compareBi210->GetYaxis();
@@ -128,7 +130,8 @@ double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold){
 	cout<<"Number of entries in complete bi = "<< bi_numEV_complete<<endl;
 	cout<<"Number of entries in complete po = "<< po_numEV_complete<<endl;
 
-
+	double TotalMistagged=0;
+	double TotalNumOfPo=0;
 	for(double energy =minBin; energy<maxBin;energy+=sliceWidth){
 		cout<<"Energy = "<< energy<<endl;
 
@@ -150,6 +153,8 @@ double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold){
 			accept=bi_remain/bi_numEV;	
 		}
 		mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
+		TotalMistagged=mistagged+TotalMistagged;
+		TotalNumOfPo=po_numEV+TotalNumOfPo;
 
 		if(po_numEV>1 && mistagged>1){
 		rejection= po_numEV/(mistagged);
@@ -163,16 +168,19 @@ double findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210, double threshold){
 			c1->cd();
 			//TLine* cutLine = new TLine( cutValue, slice_bi->GetYaxis()->GetXmin(), cutValue, slice_bi->GetYaxis()->GetXmax() );
 			TLine* cutLine = new TLine( cutValue, slice_bi->GetMinimum(), cutValue, slice_bi->GetMaximum() );
-			cutLine->SetLineWidth(2);cutLine->SetLineStyle(4);
+			cutLine->SetLineWidth(2);
+			cutLine->SetLineStyle(4);
+			slice_bi->SetTitle(("Energy slice "+SSTR(energy)+" < E < "+SSTR(energy+sliceWidth)+" { #beta efficiency = "+SSTR(threshold)+"}").c_str());
 			slice_bi->Draw();
 			slice_po->Draw("same");
 			cutLine->Draw("same");
+			c1->Print(("plots/Energy_slice_betaEfficiency_"+SSTR(threshold)+"_"+SSTR(energy)+"_E_"+SSTR(energy+sliceWidth)+".png").c_str());
 		}
 		cutValue=startingCut;
 		accept=0;
 	}
 
-
+	rej_vect.push_back(rejection*sqrt((TotalNumOfPo+TotalMistagged)/(TotalNumOfPo*TotalMistagged)));
 	return std::accumulate(Rejection_values.begin(), Rejection_values.end(), 0);
 	Rejection_values.clear();
 }
@@ -299,18 +307,20 @@ int scan(){
 	vector<double> radial_cuts, RadiusValues,Rejection_radius;
 
 	vector<double> eff,rej;
-	for(double i=0.90;i<1;i+=0.001){
+	std::vector<double> rejection_Error;
+
+	for(double i=0.90;i<1;i+=0.01){
 		cout<<"Finding Cut for eff = "<<i<<endl;
-		double TotRej=findCutsEnergy(compareBi210,comparePo210,i);
+		double TotRej=findCutsEnergy(compareBi210,comparePo210,i,rejection_Error);
 		eff.push_back(i);
 		rej.push_back(TotRej);
-		
-	}
+		}
 		
 	vector<double> energyValues_rev,cuts_rev;
 	vector<double> eff_rev,rej_rev;
 	vector<TGraph*> graphs;
-	for(double i=0.90;i<1;i+=0.001){
+
+	for(double i=0.90;i<1;i+=0.01){
 		cout<<"Finding Cut for eff_rev = "<<i<<endl;
 		double TotRej=findCutsEnergy_reverse(compareBi210,comparePo210,i,energyValues_rev,cuts_rev);
 		graphs.push_back(new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]));
@@ -333,21 +343,31 @@ int scan(){
 	RejectionGraph ->GetXaxis()->SetTitle("Efficiency on #beta");
 	RejectionGraph ->GetYaxis()->SetTitle("Rejection of #alpha");
 	RejectionGraph ->Draw("a*");
-	c1->Print("RejectionVsEfficiency_alpha.png");
+	c1->Print("plots/RejectionVsEfficiency_alpha.png");
 
 	std::vector<double> percent;
+	std::vector<double> eff_Error;
+	std::cout << "size of eff= "<<eff.size() << std::endl;
+	std::cout << "size of rej= "<<rej.size()<< std::endl;
+	std::cout << "size of rejection_Error = "<< rejection_Error.size()<< std::endl;
+	std::vector<double> percent_Error;
 	for (int i = 0; i < eff.size(); i++) {
-		percent.push_back(100/rej[i]);	
+		percent.push_back(1/rej[i]);	
+		percent_Error.push_back(percent[i]*rejection_Error[i]/rej[i]);	
+		percent_Error.push_back(10e-7);	
+		std::cout << percent[i]<<"+/-"<<percent_Error[i] << std::endl;
+		eff_Error.push_back(0);
 	}
-	TGraph* PercentageGraph = new TGraph(percent.size(),&eff[0],&percent[0]);
+	// TGraph* PercentageGraph = new TGraph(percent.size(),&eff[0],&percent[0]);
+	TGraphErrors* PercentageGraph = new TGraphErrors(percent.size(),&eff[0],&percent[0],&eff_Error[0],&percent_Error[0]);
 	TF1 *f_percent_alpha = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
 	PercentageGraph ->Fit(f_percent_alpha);
 	PercentageGraph ->SetTitle("Percentage Of #alpha's Remaining Across Efficiency");
 	PercentageGraph ->GetXaxis()->SetTitle("Efficiency on #beta");
 	PercentageGraph ->GetYaxis()->SetTitle("Percentage Remaining");
-	PercentageGraph ->Draw("a*");
+	PercentageGraph ->Draw("a.");
 	c1->SetLogy();
-	c1->Print("PercentageVsEfficiency_alpha.png");
+	c1->Print("plots/PercentageVsEfficiency_alpha.png");
 
 	TCanvas * c2= new TCanvas();
 	TGraph* RejectionGraph_rev = new TGraph(eff_rev.size(),&eff_rev[0],&rej_rev[0]);
@@ -357,7 +377,7 @@ int scan(){
 	RejectionGraph_rev ->GetXaxis()->SetTitle("Efficiency on #alpha");
 	RejectionGraph_rev ->GetYaxis()->SetTitle("Rejection of #beta");
 	RejectionGraph_rev ->Draw("a*");
-	c2->Print("RejectionVsEfficiency_beta.png");
+	c2->Print("plots/RejectionVsEfficiency_beta.png");
 
 	TCanvas * c3=new TCanvas();
 	c3->cd();
@@ -372,7 +392,7 @@ int scan(){
 	/* } */
 	cutGraph->Draw("a* same");
 
-	c3->Print("CutValue_rev.png");
+	c3->Print("plots/CutValue_rev.png");
 
 	TFile fileout("RejectionsAndEfficiency.root","RECREATE");
 	fileout.cd();

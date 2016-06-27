@@ -69,7 +69,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 	TTree* Tree = (TTree*) file->Get("output");
 	Double_t para, mcEdepQuenched,posr;
 	Bool_t  Qfit;
-	Int_t pdg1, pdg2;
+	Int_t pdg1, pdg2, evIndex;
         Int_t parentpdg1,parentpdg2;
 
         Tree->SetBranchAddress("pdg1",&pdg1);
@@ -81,6 +81,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 	Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
 	Tree->SetBranchAddress("posr",&posr);
 	Tree->SetBranchAddress("fitValid",&Qfit);
+	Tree->SetBranchAddress("evIndex",&evIndex);
 	Int_t n = (Int_t)Tree->GetEntries();
 	Int_t code;
 
@@ -91,7 +92,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 		}else if( partflag=="Po"){
 			code=1000020040;
 		}
-		if( Qfit && pdg1==code  ){
+		if( Qfit && evIndex==0 && posr<5900  ){
 		/* if( Qfit){ */
 			hist->Fill(para);
 			hist2->Fill(mcEdepQuenched,para);
@@ -162,7 +163,7 @@ void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energy
 		}
 		mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
 
-		rejection= po_numEV/mistagged;
+		rejection= po_numEV/(mistagged+0.00001);
 		cout<<mistagged<<" events were mistagged. Rejection= "<<rejection<<"."<<endl;
 		Rejection_values.push_back(rejection);
 		cutValues.push_back(cutValue);
@@ -259,7 +260,7 @@ void findCutsRadial(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energy
 
 }
 
-int main(){
+int cutter(){
 //====================================================================	
 	double binNum=100;
 	gStyle->SetOptStat(0);
@@ -381,10 +382,17 @@ int main(){
 	TGraph* RejectionEnergyGraph = new TGraph(bi_cuts.size(),&energyValues[0],&Rejection_energy[0]);
 	//TF1 *f = new TF1("f", "[1]*x +[0]");
 	//cutGraph->Fit(f);
-	RejectionEnergyGraph->SetTitle("Rejection in across energy");
+	//
+	for (int i = 0; i < Rejection_energy.size(); i++) {
+		std::cout << "ith rejection value = "<<Rejection_energy[i] << std::endl;
+	}
+
+	RejectionEnergyGraph->SetTitle("Rejection across energy with 99% #beta retention");
 	RejectionEnergyGraph->GetXaxis()->SetTitle("Energy (MeV)");
 	RejectionEnergyGraph->GetYaxis()->SetTitle("Rejection");
+	RejectionEnergyGraph->SetMaximum(100000);
 	RejectionEnergyGraph->Draw();
+	RejectionEnergy_can->SetLogy();
 	RejectionEnergy_can->Print("RejectionAcrossEnergy.png");
 
 	/* TCanvas * c3 = new TCanvas(); */

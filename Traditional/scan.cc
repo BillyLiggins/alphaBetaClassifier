@@ -324,10 +324,6 @@ int scan(){
 		cout<<"Finding Cut for eff_rev = "<<i<<endl;
 		double TotRej=findCutsEnergy_reverse(compareBi210,comparePo210,i,energyValues_rev,cuts_rev);
 		graphs.push_back(new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]));
-		//TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]);
-		/* TF1 *f = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]"); */
-		/* cutGraph->Fit(f); */
-		/* cutGraph->Draw("a*"); */
 
 		eff_rev.push_back(i);
 		rej_rev.push_back(TotRej);
@@ -351,54 +347,58 @@ int scan(){
 	std::cout << "size of rej= "<<rej.size()<< std::endl;
 	std::cout << "size of rejection_Error = "<< rejection_Error.size()<< std::endl;
 	std::vector<double> percent_Error;
+
 	for (int i = 0; i < eff.size(); i++) {
 		percent.push_back(1/rej[i]);	
 		percent_Error.push_back(percent[i]*rejection_Error[i]/rej[i]);	
-		percent_Error.push_back(10e-7);	
-		std::cout << percent[i]<<"+/-"<<percent_Error[i] << std::endl;
+		// percent_Error.push_back(10e-7);	
 		eff_Error.push_back(0);
+		std::cout <<eff[i]<<"+/-"<<eff_Error[i] <<"\t"<< percent[i]<<"+/-"<<percent_Error[i] << std::endl;
 	}
-	// TGraph* PercentageGraph = new TGraph(percent.size(),&eff[0],&percent[0]);
+
+	TCanvas* c_new =new TCanvas();
 	TGraphErrors* PercentageGraph = new TGraphErrors(percent.size(),&eff[0],&percent[0],&eff_Error[0],&percent_Error[0]);
 	TF1 *f_percent_alpha = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
 	PercentageGraph ->Fit(f_percent_alpha);
-	PercentageGraph ->SetTitle("Percentage Of #alpha's Remaining Across Efficiency");
+	PercentageGraph ->SetTitle("Percentage Of #alpha's Remaining Across #beta Efficiency");
 	PercentageGraph ->GetXaxis()->SetTitle("Efficiency on #beta");
 	PercentageGraph ->GetYaxis()->SetTitle("Percentage Remaining");
-	PercentageGraph ->Draw("a.");
-	c1->SetLogy();
-	c1->Print("plots/PercentageVsEfficiency_alpha.png");
+	PercentageGraph ->Draw("ap");
+	// c_new->SetLogy();
+	c_new->SetGrid();
+	c_new->Print("plots/PercentageVsEfficiency_alpha.tex");
+	c_new->Print("plots/PercentageVsEfficiency_alpha.png");
 
-	TCanvas * c2= new TCanvas();
-	TGraph* RejectionGraph_rev = new TGraph(eff_rev.size(),&eff_rev[0],&rej_rev[0]);
-	TF1 *f2 = new TF1("f2", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
-	RejectionGraph_rev ->Fit(f2);
-	RejectionGraph_rev ->SetTitle("Rejection Across Efficiency");
-	RejectionGraph_rev ->GetXaxis()->SetTitle("Efficiency on #alpha");
-	RejectionGraph_rev ->GetYaxis()->SetTitle("Rejection of #beta");
-	RejectionGraph_rev ->Draw("a*");
-	c2->Print("plots/RejectionVsEfficiency_beta.png");
+	// TCanvas * c2= new TCanvas();
+	// TGraph* RejectionGraph_rev = new TGraph(eff_rev.size(),&eff_rev[0],&rej_rev[0]);
+	// TF1 *f2 = new TF1("f2", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+	// RejectionGraph_rev ->Fit(f2);
+	// RejectionGraph_rev ->SetTitle("Rejection Across Efficiency");
+	// RejectionGraph_rev ->GetXaxis()->SetTitle("Efficiency on #alpha");
+	// RejectionGraph_rev ->GetYaxis()->SetTitle("Rejection of #beta");
+	// RejectionGraph_rev ->Draw("a*");
+	// c2->Print("plots/RejectionVsEfficiency_beta.png");
 
-	TCanvas * c3=new TCanvas();
-	c3->cd();
-
-	TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]);
-        TF1 *f3 = new TF1("f3", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
-        cutGraph->Fit(f3);
-	compareBi210->Draw();	
-	comparePo210->Draw("same");	
-	/* for(int j=0;j<graphs.size();j++){ */
-	/* 	graphs[j]->Draw("a* same"); */
-	/* } */
-	cutGraph->Draw("a* same");
-
-	c3->Print("plots/CutValue_rev.png");
+	// TCanvas * c3=new TCanvas();
+	// c3->cd();
+  //
+	// TGraph* cutGraph = new TGraph(cuts_rev.size(),&energyValues_rev[0],&cuts_rev[0]);
+  //       TF1 *f3 = new TF1("f3", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
+  //       cutGraph->Fit(f3);
+	// compareBi210->Draw();	
+	// comparePo210->Draw("same");	
+	// #<{(| for(int j=0;j<graphs.size();j++){ |)}>#
+	// #<{(| 	graphs[j]->Draw("a* same"); |)}>#
+	// #<{(| } |)}>#
+	// cutGraph->Draw("a* same");
+  //
+	// c3->Print("plots/CutValue_rev.png");
 
 	TFile fileout("RejectionsAndEfficiency.root","RECREATE");
 	fileout.cd();
 // 	-----Energy-----
 	RejectionGraph->Write();
-	RejectionGraph_rev->Write();
+	// RejectionGraph_rev->Write();
 // 	-----Radial-----
 	/* compareEle_radial->Write(); */
 	/* compareAlpha_radial->Write(); */

@@ -91,7 +91,7 @@ void FillHist(TFile* file,TH3D* hist){
 			hist->Fill(mcEdepQuenched,posr,berkeleyAlphaBeta);
 		}
 	}
-
+file->Close();
 }
 
 
@@ -248,11 +248,11 @@ int main(){
 //====================================================================	
 	gStyle->SetOptStat(0);
 
-	TH3D* ele_hist= new TH3D("ele_hist","berkeleyAlphaBeta",18,0,3.6,60,0,6000,40,-200,200);
+	TH3D* ele_hist= new TH3D("ele_hist","berkeleyAlphaBeta",36,0,3.6,60,0,6000,80,-400,400);
 	ele_hist->SetLineColor(kBlue);ele_hist->SetLineWidth(3);
 	ele_hist->SetMarkerColor(kBlue);
 	ele_hist->SetFillColor(kBlue);
-	TH3D* alpha_hist= new TH3D("alpha_hist","berkeleyAlphaBeta",18,0,3.6,60,0,6000,40,-200,200);
+	TH3D* alpha_hist= new TH3D("alpha_hist","berkeleyAlphaBeta",18,0,3.6,60,0,6000,40,-400,400);
 	alpha_hist->SetLineColor(kRed);alpha_hist->SetLineWidth(3);
 	alpha_hist->SetMarkerColor(kRed);
 	alpha_hist->SetFillColor(kRed);
@@ -303,13 +303,20 @@ int main(){
 	ele_hist->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
 	ele_hist->GetYaxis()->SetTitle("posr(mm)");
 	ele_hist->GetZaxis()->SetTitle("BerkeleyAlphaBeta");
+	ele_hist->SetFillColor(kRed);
+	ele_hist->SetMarkerColor(kRed);
+	ele_hist->SetLineColor(kRed);
 	ele_hist->Draw();
+	alpha_hist->SetFillColor(kBlue);
+	alpha_hist->SetMarkerColor(kBlue);
+	alpha_hist->SetLineColor(kBlue);
 	alpha_hist->Draw("same");
 
 	t1->AddEntry(ele_hist, "beta","f");
+	t1->AddEntry(alpha_hist, "alpha","f");
 	t1->Draw();
 
-	//c2->Print("compareBerkeleyAlphaBetaVsMCEnergy_withCuts.png");
+	c2->Print("compareBerkeleyAlphaBetaVsMCEnergy_withCuts.png");
 	TFile fileout("3D_Plot.root","RECREATE");
 	fileout.cd();
 	alpha_hist->Write();

@@ -67,7 +67,7 @@ vector<string> glob( const string& path, const string& start )
 void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRadial,ofstream& outputfile){
 
 				TTree* Tree = (TTree*) file->Get("output");
-				Double_t para, mcEdepQuenched,posr;
+				Double_t para, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
 				Int_t pdg1, pdg2, evIndex;
 				Int_t parentpdg1,parentpdg2;
@@ -80,6 +80,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 				Tree->SetBranchAddress("berkeleyAlphaBeta",&para);
 				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
 				Tree->SetBranchAddress("posr",&posr);
+				Tree->SetBranchAddress("mcPosr",&mcPosr);
 				Tree->SetBranchAddress("fitValid",&Qfit);
 				Tree->SetBranchAddress("evIndex",&evIndex);
 				Int_t n = (Int_t)Tree->GetEntries();
@@ -92,7 +93,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 								}else if( partflag=="Po"){
 												code=1000020040;
 								}
-								if( Qfit && evIndex==0 && posr<5900  ){
+								if( Qfit && evIndex==0 && mcPosr<4000  ){
 												/* if( Qfit){ */
 												hist->Fill(para);
 												hist2->Fill(mcEdepQuenched,para);

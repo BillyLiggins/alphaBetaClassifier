@@ -126,7 +126,10 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 								double TotalMistagged=0;
 								double TotalNumOfPo=0;
 
-								for(double energy =minBin; energy<maxBin;energy+=sliceWidth){
+								TH1D* mistaggedEff = new TH1D("mistaggedEff","",100,-1000,20000);								 
+								std::vector<double> NumberOfMistags, NumberOfMistags_error, energyValues, energyValues_error;
+
+								for(double energy =minBin; energy<maxBin-sliceWidth;energy+=sliceWidth){
 												// cout<<"Energy = "<< energy<<endl;
 
 												//These histograms contain the sliced projections
@@ -147,11 +150,23 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 																accept=bi_remain/bi_numEV;	
 												}
 												mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
+												
 												Mistaggedhist->Fill(mistagged);
+												mistaggedEff->Fill(mistagged);
+												NumberOfMistags.push_back(mistagged);
+												NumberOfMistags_error.push_back(sqrt(mistagged));
+												energyValues.push_back(energy);
+												energyValues_error.push_back(sliceWidth/2);
+
+
+
 												TotalMistagged+=mistagged;
 												TotalNumOfPo+=po_numEV;
 
-												rejection= po_numEV/(mistagged);
+												// rejection= po_numEV/(mistagged);
+												
+												// rejection= po_numEV/(mistagged+0.00001);
+												rejection= po_numEV/(mistagged+0.000001); // 
 												// if(po_numEV>0 && mistagged>0){
 												// 				rejection= po_numEV/(mistagged);
 												// }else{
@@ -182,6 +197,32 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 												cutValue=startingCut;
 												accept=0;
 								}
+								TCanvas* c_inLoop = new TCanvas();
+								mistaggedEff->GetXaxis()->SetTitle("Number of mistagged events");
+								mistaggedEff->GetYaxis()->SetTitle("Counts ");
+								mistaggedEff->SetTitle(Form("Mistagged events with a #beta efficiency of %.2f",threshold*100));
+								mistaggedEff->Draw();
+								c_inLoop->Print(Form("plots/mistagged/mistagged_eff_%.2f_highRad_6000.png",threshold));
+								c_inLoop->Print(Form("plots/mistagged/mistagged_eff_%.2f_highRad_6000.tex",threshold));
+
+								TCanvas* c_mistagInLoop = new TCanvas();
+								// TGraph* graph_mistagged = new TGraph(energyValues.size(),&energyValues[0],&NumberOfMistags[0]);
+								TGraphErrors* graph_mistagged = new TGraphErrors(energyValues.size(),&energyValues[0],&NumberOfMistags[0],&energyValues_error[0],&NumberOfMistags_error[0]);
+								graph_mistagged->SetTitle(Form("Number of mistagged events across energy for a %.2f #beta effiency",threshold));
+								graph_mistagged->GetXaxis()->SetTitle("Energy (MeV)");
+								graph_mistagged->GetYaxis()->SetTitle("Mistagged events");
+								// graph_mistagged->SetMinimum(0);
+								graph_mistagged->SetMaximum(10e5);
+								graph_mistagged->Draw("ap");
+								c_mistagInLoop->SetLogy();
+								c_mistagInLoop->Print(Form("mistaggedEventsVsEnergy_eff_%.2f.png",threshold));
+								c_mistagInLoop->Print(Form("mistaggedEventsVsEnergy_eff_%.2f.tex",threshold));
+								 
+								
+								TFile fileout("numberOfmistags.root","UPDATE");
+								fileout.cd();
+								graph_mistagged->Write();
+								fileout.Close();
 
 								double TotalRej=std::accumulate(Rejection_values.begin(), Rejection_values.end(), 0);
 
@@ -213,7 +254,7 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 								comparePo210->SetMarkerColor(kRed);
 								comparePo210->SetFillColor(kRed);
 
-								TH1D* mistaggedHist= new TH1D("mistaggedHist","berkeleyAlphaBeta",1000,0,10000);
+								TH1D* mistaggedHist= new TH1D("mistaggedHist","berkeleyAlphaBeta",110000,-10000,100000);
 								mistaggedHist->SetLineColorAlpha(kBlue,0.2);
 								mistaggedHist->SetLineWidth(3);
 								mistaggedHist->SetFillColorAlpha(kBlue,0.2);
@@ -248,6 +289,7 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 								std::vector<double> rejection_Error;
 
 								for(double i=0.80;i<1;i+=0.01){
+								// for(double i=0.80;i<1;i+=0.001){
 												// cout<<"Finding Cut for eff = "<<i<<endl;
 												double TotRej=findCutsEnergy(compareBi210,comparePo210,i,rejection_Error,mistaggedHist);
 												eff.push_back(i*100);
@@ -272,13 +314,13 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 												std::cout << "percent = "<<percent[i]<<"+/-"<<percent_Error[i] << std::endl;
 												std::cout << "rej = "<<rej[i]<<"+/-"<<rejection_Error[i] << std::endl;
 								}
-								std::cout << "FLTMIN = "<<FLT_MIN << std::endl;
+								// std::cout << "FLTMIN = "<<FLT_MIN << std::endl;
 
 								TCanvas* c_mistagged =new TCanvas();
 								c_mistagged->SetGrid();
 								mistaggedHist->SetTitle("Number of mistagged events");
 								mistaggedHist->GetXaxis()->SetTitle("Mistagged events");
-								mistaggedHist->SetMaximum(100);
+								// mistaggedHist->SetMaximum(10);
 								mistaggedHist->Draw();
 
 								c_mistagged->Print(Form("plots/mistagged_total_highRad_%.f.png",highRad));
@@ -289,8 +331,8 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000){
 								// TF1 *f_percent_alpha = new TF1("f", "[3]*x*x*x +[2]*x*x +[1]*x +[0]");
 								// fractionGraph ->Fit(f_percent_alpha);
 								fractionGraph ->SetTitle(Form("Surviving #alpha 's over accepted #beta 's {mcPosr < %f }",highRad));
-								fractionGraph ->GetXaxis()->SetTitle("Remaining #beta 's ");
-								fractionGraph ->GetYaxis()->SetTitle("Remaining #alpha 's ");
+								fractionGraph ->GetXaxis()->SetTitle("Remaining #beta 's % ");
+								fractionGraph ->GetYaxis()->SetTitle("Remaining #alpha 's % ");
 								// fractionGraph ->GetXaxis()->SetTitle("Remaining #beta 's %");
 								// fractionGraph ->GetYaxis()->SetTitle("Remaining #alpha 's %");
 								fractionGraph ->Draw("ap");

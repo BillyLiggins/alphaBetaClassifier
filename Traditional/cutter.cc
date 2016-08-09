@@ -217,7 +217,8 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 
 								int cutter(){
 												//====================================================================	
-												double binNum=11;
+												double binNum=8;
+												// double bin8m=25;
 												// double binNum=100;
 												gStyle->SetOptStat(0);
 												TH1D *hBi210   = new TH1D("hBi210","berkeleyAlphaBeta",100,-100,100);

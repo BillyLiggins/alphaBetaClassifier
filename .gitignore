@@ -7,6 +7,8 @@
 macs/*
 output/*
 scripts/*
+plots/
 hello*
 *.so
 *.d
+*.root

@@ -110,6 +110,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 
 
 				// void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& Rejection_values){
+
 				void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& Rejection_values,vector<double>& Rejection_errors,vector<double>& energy_errors){
 								/* This function should take a 2d histrogram split it into energy 
 								 * strips and then find a cut value which retain ~99% of the signal.
@@ -140,6 +141,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 								double po_numEV_complete= comparePo210->GetEntries();
 								cout<<"Number of entries in complete bi = "<< bi_numEV_complete<<endl;
 								cout<<"Number of entries in complete po = "<< po_numEV_complete<<endl;
+								double totalMistaging = 0;
 
 								for(double energy =minBin; energy<maxBin-sliceWidth;energy+=sliceWidth){
 												/* for(double energy =0; energy<2.5;energy+=0.1){ */
@@ -168,7 +170,7 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 												}
 
 												mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
-
+												totalMistaging+= mistagged;
 												rejection= po_numEV/(mistagged+0.00001);
 												// rejection= po_numEV/(mistagged);
 												// cout<<mistagged<<" events were mistagged. Rejection= "<<rejection<<"."<<endl;
@@ -184,18 +186,28 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 												energyValues.push_back(energy+ sliceWidth/2);
 												energy_errors.push_back(sliceWidth/2);
 
-												if(true){
+												if(false){
+
+																slice_bi->SetLineColorAlpha(kBlue,0.5);
+																slice_bi->SetMarkerColorAlpha(kBlue,0.5);
+																slice_bi->SetFillColorAlpha(kBlue,0.5);
+
+																slice_po->SetLineColorAlpha(kRed,0.5);
+																slice_po->SetMarkerColorAlpha(kRed,0.5);
+																slice_po->SetFillColorAlpha(kRed,0.5);
 
 																TCanvas* c1 = new TCanvas();
 																c1->cd();
 																double maximum;
-																if(energy== minBin) maximum = ( slice_bi->GetMaximum() > slice_po->GetMaximum() ) ? slice_bi->GetMaximum() : slice_po->GetMaximum();
+																// if(energy== minBin) maximum = ( slice_bi->GetMaximum() > slice_po->GetMaximum() ) ? slice_bi->GetMaximum() : slice_po->GetMaximum();
+																if(energy== minBin) maximum = 2000;
 																std::cout << "maximum = "<< maximum << std::endl;
-																TLegend* leg = new TLegend( 0.81, 0.81, 0.9, 0.9 );
+																TLegend* leg = new TLegend( 0.70, 0.70, 0.9, 0.9 );
 																TLine* cutLine = new TLine( cutValue, slice_bi->GetMinimum(), cutValue, maximum );
 																cutLine->SetLineWidth(2);
 																cutLine->SetLineStyle(4);
 																slice_bi->SetMaximum(maximum);
+																slice_bi->SetTitle("BerkeleyAlphaBeta {0.4<E<0.5 MeV}");
 																slice_bi->Draw();
 																slice_po->Draw("same");
 																cutLine->Draw("same");
@@ -205,19 +217,24 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 																leg->AddEntry(cutLine,"99%","l");
 																leg->Draw();
 																std::cout << "energy = "<<energy<<" energy+sliceWidth = "<<energy+sliceWidth << std::endl;
-																c1->Print(Form("plots/energySlices/Energy_slice_%.3f_E_%.3f.png",energy,energy+sliceWidth));
+																c1->Print(Form("plots/energySlices/forTalk/Energy_slice_%.3f_E_%.3f.png",energy,energy+sliceWidth));
 
 												}
 												cutValue=startingCut;
 												accept=0;
 								}
 
+								cout<<"Totel number of mistagged alphas= "<< totalMistaging<<endl;
+								cout<<"Total number of po_numEV_complete = "<<po_numEV_complete<<endl;
+								cout<<"Percentage of beta leaf after E-dep cut = "<<totalMistaging*100/po_numEV_complete<<endl;
+
 								}
 
 
 								int cutter(){
 												//====================================================================	
-												double binNum=11;
+												// double binNum=8;
+												double binNum=25;
 												// double binNum=100;
 												gStyle->SetOptStat(0);
 												TH1D *hBi210   = new TH1D("hBi210","berkeleyAlphaBeta",100,-100,100);
@@ -227,12 +244,12 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 												hPo210->SetLineColor(kRed);hPo210->SetLineWidth(3);
 												TH1D *hBlank   = new TH1D("hBlank","berkeleyAlphaBeta",100,-100,100);
 
-												TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",binNum,0,2.5,260,-160,100);
+												TH2D* compareBi210   = new TH2D("compareBi210","berkeleyAlphaBeta",binNum,0,2.5,260,-60,40);
 												compareBi210->SetLineColorAlpha(kBlue,0.2);
 												compareBi210->SetLineWidth(3);
 												compareBi210->SetMarkerColorAlpha(kBlue,0.2);
 												compareBi210->SetFillColorAlpha(kBlue,0.2);
-												TH2D* comparePo210   = new TH2D("comparePo210","berkeleyAlphaBeta",binNum,0,2.5,260,-160,100);
+												TH2D* comparePo210   = new TH2D("comparePo210","berkeleyAlphaBeta",binNum,0,2.5,260,-60,40);
 												comparePo210->SetLineColorAlpha(kRed,0.2);
 												comparePo210->SetLineWidth(3);
 												comparePo210->SetMarkerColorAlpha(kRed,0.2);

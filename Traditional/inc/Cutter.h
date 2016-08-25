@@ -28,12 +28,14 @@ void SetHist();
 
 void PrintHist();
 
-
+// void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& Rejection_values,vector<double>& Rejection_errors,vector<double>& energy_errors);
+void findCutsEnergy();
 
 private:
 				TH2D * BabVsEnergy;
 				// ofstream& outputfile;
 				std::string PID;
+				vector<double> energyValues,cutValues, Rejection_values, Rejection_errors, energy_errors;
 
 };
 

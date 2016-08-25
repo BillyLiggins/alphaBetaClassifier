@@ -11,6 +11,10 @@ however may be explained by the .... Think about it.
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model, datasets
+from sklearn.neural_network import MLPClassifier
+from sklearn.cross_validation import train_test_split
+
+
 
 data_bi=np.loadtxt("Classifier_data_bi.dat",skiprows=1,delimiter=",",usecols=(0,2))
 
@@ -35,7 +39,8 @@ testTarget= target[target.shape[0]/2:]
 
 h = 2  # step size in the mesh
 
-logreg = linear_model.LogisticRegression(C=1e5)
+logreg= MLPClassifier(algorithm='l-bfgs', alpha=1e-5, hidden_layer_sizes=(3, 2), random_state=1)
+# logreg = linear_model.LogisticRegression(C=1e5)
 
 # we create an instance of Neighbours Classifier and fit the data.
 logreg.fit(X, Y)
@@ -45,7 +50,7 @@ logreg.fit(X, Y)
 x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
 y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
 xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-ZZ = logreg.predict(np.c_[xx.ravel(), yy.ravel()])
+# ZZ = logreg.predict(np.c_[xx.ravel(), yy.ravel()])
 Z = logreg.predict(testData)
 
 print Z
@@ -63,19 +68,19 @@ print "chance of failure (fail/total) = " +str(float(fail)/(fail+success))
 
 
 
-# Put the result into a color plot
-ZZ = ZZ.reshape(xx.shape)
-plt.figure(1, figsize=(4, 3))
-plt.pcolormesh(xx, yy, ZZ, cmap=plt.cm.Paired)
-
-#Plot also the training points
-plt.scatter(X[:, 0], X[:, 1], c=Y, edgecolors='k', cmap=plt.cm.Paired)
-plt.xlabel('MC Energy (MeV)')
-plt.ylabel('BAB')
-
-plt.xlim(xx.min(), xx.max())
-plt.ylim(yy.min(), yy.max())
-plt.xticks(())
-plt.yticks(())
-
-plt.show()
+# # Put the result into a color plot
+# ZZ = ZZ.reshape(xx.shape)
+# plt.figure(1, figsize=(4, 3))
+# plt.pcolormesh(xx, yy, ZZ, cmap=plt.cm.Paired)
+#
+# #Plot also the training points
+# plt.scatter(X[:, 0], X[:, 1], c=Y, edgecolors='k', cmap=plt.cm.Paired)
+# plt.xlabel('MC Energy (MeV)')
+# plt.ylabel('BAB')
+#
+# plt.xlim(xx.min(), xx.max())
+# plt.ylim(yy.min(), yy.max())
+# plt.xticks(())
+# plt.yticks(())
+#
+# plt.show()

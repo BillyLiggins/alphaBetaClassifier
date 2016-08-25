@@ -12,3 +12,5 @@ hello*
 *.so
 *.d
 *.root
+*.swp
+main

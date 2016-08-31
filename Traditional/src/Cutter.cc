@@ -64,7 +64,7 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 {
 
 				TTree* Tree = (TTree*) file->Get("output");
-				Double_t para, mcEdepQuenched,posr,mcPosr;
+				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
 				Int_t pdg1, pdg2, evIndex;
 				Int_t parentpdg1,parentpdg2;
@@ -74,7 +74,7 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
 				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
 
-				Tree->SetBranchAddress("berkeleyAlphaBeta",&para);
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
 				Tree->SetBranchAddress("posr",&posr);
 				Tree->SetBranchAddress("mcPosr",&mcPosr);
@@ -87,9 +87,9 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
 
-												BabVsEnergy->Fill(mcEdepQuenched,para);
+												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
-												outputfile<< mcEdepQuenched<<","<<posr<<","<< para << std::endl;
+												outputfile<< mcEdepQuenched<<","<<posr<<","<< berkeleyAlphaBeta << std::endl;
 								}
 				}
 
@@ -100,7 +100,7 @@ void Cutter::FillHist(TFile* file)
 {
 
 				TTree* Tree = (TTree*) file->Get("output");
-				Double_t para, mcEdepQuenched,posr,mcPosr;
+				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
 				Int_t pdg1, pdg2, evIndex;
 				Int_t parentpdg1,parentpdg2;
@@ -110,7 +110,7 @@ void Cutter::FillHist(TFile* file)
 				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
 				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
 
-				Tree->SetBranchAddress("berkeleyAlphaBeta",&para);
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
 				Tree->SetBranchAddress("posr",&posr);
 				Tree->SetBranchAddress("mcPosr",&mcPosr);
@@ -123,7 +123,7 @@ void Cutter::FillHist(TFile* file)
 
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
 
-												BabVsEnergy->Fill(mcEdepQuenched,para);
+												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
 								}
 				}
@@ -180,8 +180,55 @@ void Cutter::PrintHist(){
 
 }
 
+
 TH2D* Cutter::GetHist(){
 
 				return BabVsEnergy;
 }
 
+void Cutter::ApplyCut(TFile * file){
+				numberOfEntries=0;
+				remainingAfterCut=0;
+				TTree* Tree = (TTree*) file->Get("output");
+				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
+				Bool_t  Qfit;
+				Int_t pdg1, pdg2, evIndex;
+				Int_t parentpdg1,parentpdg2;
+
+				Tree->SetBranchAddress("pdg1",&pdg1);
+				Tree->SetBranchAddress("pdg2",&pdg2);
+				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
+				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
+
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
+				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+				Tree->SetBranchAddress("posr",&posr);
+				Tree->SetBranchAddress("mcPosr",&mcPosr);
+				Tree->SetBranchAddress("fitValid",&Qfit);
+				Tree->SetBranchAddress("evIndex",&evIndex);
+				Int_t n = (Int_t)Tree->GetEntries();
+
+				// std::cout<<"inside ApplyCut"<<std::endl;
+				// std::cout<<"Grad = "<<gradient<<std::endl;
+				// std::cout<<"Intercept = "<<intercept<<std::endl;
+
+				for( Int_t i =0;i<n;i++){
+								Tree->GetEntry(i);
+
+								if( Qfit && evIndex==0 && mcPosr<4000  ){
+												
+												numberOfEntries++;
+												if(PID=="alpha"){
+																if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
+												}else if ( PID =="beta"){
+																if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
+												}else{
+																std::cout<<"Cutter needs to have a PID"<<std::endl;
+												}
+								}
+				}
+
+				
+				file->Close();
+
+}

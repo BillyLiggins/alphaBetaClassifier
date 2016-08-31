@@ -28,7 +28,15 @@ public:
 void FillHist(TFile* file ,ofstream& outputfile);
 void FillHist(TFile* file );
 
+void ApplyCut(TFile * file );
+
 void SetHist();
+
+void SetGradient(double value){ gradient= value;}
+void SetIntercept(double value){ intercept= value;}
+				
+double GetGradient(){ return gradient;}
+double GetIntercept(){ return intercept;}
 
 void SetHistLimits(double Ebins,double ELow,double EHigh,double BabBins, double BabLow, double BabHigh);
 
@@ -36,7 +44,6 @@ void PrintHist();
 
 TH2D* GetHist();
 
-double GetNumberOfEntries(){ return numberOfEntries;}
 
 std::string GetPID() const {return PID;}
 const std::vector<double> & GetRejectionValuesVector() const { return Rejection_values;}
@@ -60,12 +67,18 @@ void  EnterCutValues(double entry) { cutValues.push_back(entry);}
 void findCutsEnergy();
 
 
+double GetNumberOfEntries(){return numberOfEntries;}
+double GetRemainingAfterCut(){return remainingAfterCut;}
+
 private:
 				TH2D * BabVsEnergy;
 				// ofstream& outputfile;
 				double numberOfEntries;
+				double gradient;
+				double intercept;
 				std::string PID;
 				std::vector<double> energyValues,cutValues, Rejection_values, Rejection_errors, energy_errors, mistagged,mistagged_error;
+				double remainingAfterCut;
 
 };
 

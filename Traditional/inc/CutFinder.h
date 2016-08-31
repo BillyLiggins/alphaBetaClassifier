@@ -38,6 +38,7 @@ public:
 								threshold=value;
 				}
 				
+				void scan();
 
 
 private:

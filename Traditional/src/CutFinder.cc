@@ -186,15 +186,53 @@ void CutFinder::FindBoundary(){
 								cutValue=startingCut;
 								accept=0;
 				}
+								// std::vector<double> energyValues =rejector->GetEnergyValuesVector.
+								TGraph* cutBoundary= new TGraph(rejector->GetEnergyValuesVector().size(),&(rejector->GetEnergyValuesVector())[0],&(rejector->GetCutValuesVector())[0]);
+								TF1 *f_E = new TF1("f_E", "[1]*x +[0]",0,2.5);
+								cutBoundary->Fit(f_E);
 
-				std::cout<<"Totel number of mistagged alphas= "<< totalMistaging<<std::endl;
+								TFile* function = new TFile("cutBoundary.root","recreate");
+								f_E->Write();
+								function->Close();
+
+								double Intercept = f_E->GetParameter(0);
+								double Gradient = f_E->GetParameter(1);
+
+								rejector->SetIntercept(Intercept);
+								rejector->SetGradient(Gradient);
+
+								acceptor->SetIntercept(Intercept);
+								acceptor->SetGradient(Gradient);
+
+
+				
+				std::cout<<"Total number of mistagged alphas= "<< totalMistaging<<std::endl;
 				std::cout<<"Total number of rejector_numEV_complete = "<<rejector_numEV_complete<<std::endl;
-				std::cout<<"Percentage of beta leaf after E-dep cut = "<<totalMistaging*100/rejector_numEV_complete<<std::endl;
+				std::cout<<"Percentage of beta left after E-dep cut = "<<totalMistaging*100/rejector_numEV_complete<<std::endl;
 
 
 				}
 
+void CutFinder::scan(){
+				std::cout<<"Now scanning"<<std::endl;	
+				std::vector<double> efficen;
+				for(double eff=0.8;eff<1;eff+=0.01){
+								SetThreshold(eff);
+								FindBoundary();
 
+
+								std::vector<double> energyValues = rejector->GetEnergyValuesVector();
+								std::vector<double> energyErrors = rejector->GetEnergyErrorVector();
+
+								std::vector<double> rejection= rejector->GetRejectionValuesVector();
+								std::vector<double> rejectionErrors= rejector->GetRejectionErrorVector();
+
+								std::vector<double> mistagged= rejector->GetMistaggedValueVector();
+								std::vector<double> mistaggedErrors= rejector->GetMistaggedErrorVector();
+
+				}
+
+}
 
 
 //You have to think about this now. You have two cutter objects which contains stuff for alphas/betas. 

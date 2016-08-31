@@ -88,12 +88,67 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,para);
-
+												numberOfEntries++;
 												outputfile<< mcEdepQuenched<<","<<posr<<","<< para << std::endl;
 								}
 				}
 
 				file->Close();
+}
+
+void Cutter::FillHist(TFile* file)
+{
+
+				TTree* Tree = (TTree*) file->Get("output");
+				Double_t para, mcEdepQuenched,posr,mcPosr;
+				Bool_t  Qfit;
+				Int_t pdg1, pdg2, evIndex;
+				Int_t parentpdg1,parentpdg2;
+
+				Tree->SetBranchAddress("pdg1",&pdg1);
+				Tree->SetBranchAddress("pdg2",&pdg2);
+				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
+				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
+
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&para);
+				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+				Tree->SetBranchAddress("posr",&posr);
+				Tree->SetBranchAddress("mcPosr",&mcPosr);
+				Tree->SetBranchAddress("fitValid",&Qfit);
+				Tree->SetBranchAddress("evIndex",&evIndex);
+				Int_t n = (Int_t)Tree->GetEntries();
+
+				for( Int_t i =0;i<n;i++){
+								Tree->GetEntry(i);
+
+								if( Qfit && evIndex==0 && mcPosr<4000  ){
+
+												BabVsEnergy->Fill(mcEdepQuenched,para);
+												numberOfEntries++;
+								}
+				}
+
+				file->Close();
+}
+
+void Cutter::SetHistLimits(double Ebins,double ELow,double EHigh,double BabBins, double BabLow, double BabHigh){
+
+				BabVsEnergy = new TH2D("BabVsEnergy","berkeleyAlphaBeta",Ebins,ELow,EHigh,BabBins,BabLow,BabHigh);
+				if(PID=="alpha"){
+								BabVsEnergy->SetLineColorAlpha(kRed,0.2);
+								BabVsEnergy->SetLineWidth(3);
+								BabVsEnergy->SetMarkerColorAlpha(kRed,0.2);
+								BabVsEnergy->SetFillColorAlpha(kRed,0.2);
+				}else if (PID=="beta"){
+								BabVsEnergy->SetLineColorAlpha(kBlue,0.2);
+								BabVsEnergy->SetLineWidth(3);
+								BabVsEnergy->SetMarkerColorAlpha(kBlue,0.2);
+								BabVsEnergy->SetFillColorAlpha(kBlue,0.2);
+				}else{
+								std::cout<<"You need to supply a PID"<<std::endl;
+				}
+				BabVsEnergy->SetTitle("BerekelyAlphaBeta across energy");
+				BabVsEnergy->GetXaxis()->SetTitle("mcEdepQuenched (Mev)");
 }
 
 void Cutter::SetHist(){
@@ -123,5 +178,10 @@ void Cutter::PrintHist(){
 				BabVsEnergy->Draw();
 				c1->Print(Form("plots/BabVsMCEdepQuenched_%s.png",PID.c_str()));
 
+}
+
+TH2D* Cutter::GetHist(){
+
+				return BabVsEnergy;
 }
 

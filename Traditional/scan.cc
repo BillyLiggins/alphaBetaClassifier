@@ -176,7 +176,7 @@ void FillHist(TFile* file,TH2D * hist2, const double highRad=6000)
 
 												Rejection_values.push_back(rejection);
 
-												if(true){
+												if(false){
 																TCanvas* c1 = new TCanvas();
 																c1->cd();
 																//TLine* cutLine = new TLine( cutValue, slice_bi->GetYaxis()->GetXmin(), cutValue, slice_bi->GetYaxis()->GetXmax() );

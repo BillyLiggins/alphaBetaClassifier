@@ -92,26 +92,6 @@ void FillHist(TFile* file,TH1D * hist,TH2D * hist2,TH1D *radial,TH2D *compareRad
 				// void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& Rejection_values){
 
 void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energyValues, vector<double>& cutValues,vector<double>& Rejection_values,vector<double>& Rejection_errors,vector<double>& energy_errors){
-								/* This function should take a 2d histrogram split it into energy 
-								 * strips and then find a cut value which retain ~99% of the signal.
-								 */
-								//for(double energy =0; energy<3.5;energy+=0.1){
-
-								double startingCut=-500;
-								double step=0.1;
-								double cutValue=startingCut;
-								double accept=0;
-								double mistagged=0;
-								double rejection=0;
-								double minBin=compareBi210->GetXaxis()->GetXmin();
-								double maxBin=compareBi210->GetXaxis()->GetXmax();
-								double sliceWidth=compareBi210->GetXaxis()->GetBinWidth(1);
-								cout<<"minBin = "<<minBin<<endl;
-								cout<<"maxBin = "<<maxBin<<endl;
-								cout<<"sliceWidth = "<<sliceWidth<<endl;
-								double threshold=0.99;
-								TAxis* bi_x=compareBi210->GetXaxis();
-								TAxis* bi_y=compareBi210->GetYaxis();
 								TAxis* po_x=comparePo210->GetXaxis();
 								TAxis* po_y=comparePo210->GetYaxis();
 
@@ -483,6 +463,26 @@ void findCutsEnergy(TH2D *compareBi210,TH2D *comparePo210,vector<double>& energy
 
 																//These histograms contain the sliced projections
 																TH1D* slice_bi=compareBi210->ProjectionY(SSTR(energy).c_str(),bi_x->FindBin(energy),bi_x->FindBin(energy+sliceWidth));
+																TH1D* slice_po=comparePo210->ProjectionY(("Po"+SSTR(energy)).c_str(),po_x->FindBin(energy),po_x->FindBin(energy+sliceWidth));
+
+																//These two numbers are the num of events before cuts
+																double bi_numEV=slice_bi->GetEntries();
+																double po_numEV=slice_po->GetEntries();
+
+																TAxis* bi_slice_x=slice_bi->GetXaxis();
+																TAxis* po_slice_x=slice_po->GetXaxis();
+
+																while(accept<threshold){
+
+																				//This loop finds the cut value to a certain threshold is achevied, it does so by incrementing by 'step'
+																				double bi_remain=slice_bi->Integral(bi_slice_x->FindBin(startingCut),bi_slice_x->FindBin(cutValue+=step));
+																				//double po_remain=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(startingCut+step));
+																				cout<<"Number of entries remaining in bi slice = "<< bi_remain<<endl;
+																				//cout<<"Number of entries remaining in po slice = "<< po_remain<<endl;
+																				accept=bi_remain/bi_numEV;	
+																				cout<<"Accepted fraction = "<<accept<<endl;
+																}
+																mistagged=slice_po->Integral(po_slice_x->FindBin(startingCut),po_slice_x->FindBin(cutValue));
 																TH1D* slice_po=comparePo210->ProjectionY(("Po"+SSTR(energy)).c_str(),po_x->FindBin(energy),po_x->FindBin(energy+sliceWidth));
 
 																//These two numbers are the num of events before cuts

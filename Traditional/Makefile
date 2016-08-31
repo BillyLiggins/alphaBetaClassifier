@@ -4,7 +4,7 @@ TARGET = main
 LIBS = -lstdc++ -L/usr/local/lib -lm $(shell root-config --evelibs) 
 
 CC = gcc
-CFLAGS = -g -ansi -pedantic -W -Wall -Wextra -std=c++11 -m64
+# CFLAGS = -g -ansi -pedantic -W -Wall -Wextra -std=c++11 -m64
 CFLAGS = -g -ansi -pedantic -W -Wall -Wextra -m64
 
 SRC = $(wildcard src/*.cc)

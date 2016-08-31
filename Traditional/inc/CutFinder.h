@@ -2,8 +2,8 @@
 #define __CutFinder__
 
 //Your libaries
+#include "UTIL.h"
 #include "Cutter.h"
-#include "Util.h"
 
 //ROOT libaries
 #include <TH1D.h>
@@ -26,9 +26,17 @@ public:
 			 	CutFinder(Cutter* acceptor,Cutter* rejector): acceptor(acceptor), rejector(rejector){
 				}
 
-				void findBoundary();
-				void FindCutValue();
+				~CutFinder(){
+				}
+				void FindBoundary();
+				// void FindCutValue();
 
+				double GetThreshold(){
+								return threshold;
+				}
+				void SetThreshold(double value){
+								threshold=value;
+				}
 				
 
 
@@ -38,6 +46,7 @@ private:
 				Cutter* rejector;
 				double acceptor_entries;
 				double rejector_entries;
+				double threshold;
 };
 
 

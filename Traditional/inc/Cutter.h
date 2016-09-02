@@ -16,10 +16,10 @@
 
 class Cutter{
 				public:
-								Cutter():  numberOfEntries(0),remainingAfterCut(0){
+								Cutter():  numberOfEntries(0),remainingAfterCut(0),radialCut(4000){
 												;}
 
-								Cutter(std::string PID): PID(PID),  numberOfEntries(0), remainingAfterCut(0) {
+								Cutter(std::string PID): PID(PID),  numberOfEntries(0), remainingAfterCut(0),radialCut(4000) {
 												;}
 
 								~Cutter(){
@@ -63,7 +63,7 @@ class Cutter{
 								const std::vector<double> & GetMistaggedValueVector() const { return mistagged;}
 								const std::vector<double> & GetMistaggedErrorVector() const { return mistagged_error;}
 
-								std::vector<double> GetCutValuesVector() const { return cutValues;}
+								const	std::vector<double> & GetCutValuesVector() const { return cutValues;}
 
 								void  EnterRejectionValue(double entry) { Rejection_values.push_back(entry);}
 								void  EnterRejectionError(double entry) { Rejection_errors.push_back(entry);}
@@ -79,11 +79,15 @@ class Cutter{
 								double GetNumberOfEntries(){return numberOfEntries;}
 								double GetRemainingAfterCut(){return remainingAfterCut;}
 
+								void SetRadialCut(double value){ radialCut= value;}
+								double GetRadialCut(){ return radialCut;}
+
 				private:
 								TH2D * BabVsEnergy;
 								TH2D * BabVsEnergyPassCut;
 								// ofstream& outputfile;
 								double numberOfEntries;
+								double radialCut;
 								double gradient;
 								double intercept;
 								std::string PID;

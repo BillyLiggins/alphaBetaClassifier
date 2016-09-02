@@ -85,7 +85,7 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								if( Qfit && evIndex==0 && mcPosr< radialCut  ){
 								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
@@ -122,7 +122,7 @@ void Cutter::FillHist(TFile* file)
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								if( Qfit && evIndex==0 && mcPosr< radialCut  ){
 								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
@@ -213,7 +213,7 @@ void Cutter::ApplyCut(TFile * file){
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								if( Qfit && evIndex==0 && mcPosr< radialCut  ){
 								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 												
 												numberOfEntries++;

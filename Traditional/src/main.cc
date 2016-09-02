@@ -51,24 +51,120 @@ int main(){
 				
 				findBoundary();
 				applyBoundary();
-				// scan();
+				scan();
 
 				return 0;
 }
 
 
+// void findBoundary(){
+//
+// 				ofstream File_bi;
+// 				ofstream File_po;
+//
+// 				File_bi.open("Classifier_data_bi.dat");
+// 				File_po.open("Classifier_data_po.dat");
+//
+// 				File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" <<  std::endl;
+// 				File_po << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" << std::endl;
+//
+// 				UTIL* util = new UTIL();
+//
+//
+// 				Cutter* alpha = new Cutter("alpha");
+// 				Cutter* beta = new Cutter("beta");
+//
+// 				alpha->SetHistLimits(100,0,2.5,260,-160,100);
+// 				beta->SetHistLimits(100,0,2.5,260,-160,100);
+//
+// 				beta->FillCutter("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron",File_bi);
+// 				beta->PrintHist();
+//
+// 				alpha->FillCutter("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha",File_po);
+// 				alpha->PrintHist();
+//
+// 				File_bi.close();
+// 				File_po.close();
+//
+//
+// 				CutFinder* cutFinder= new CutFinder(beta,alpha);
+// 				cutFinder->SetThreshold(0.9999);
+// 				cutFinder->FindBoundary();
+//
+//
+// 				std::vector<double> energyValues = alpha->GetEnergyValuesVector();
+// 				std::vector<double> energyErrors = alpha->GetEnergyErrorVector();
+//
+// 				std::vector<double> rejection = alpha->GetRejectionValuesVector();
+// 				std::vector<double> rejectionErrors = alpha->GetRejectionErrorVector();
+//
+// 				std::vector<double> mistagged = alpha->GetMistaggedValueVector();
+// 				std::vector<double> mistaggedErrors = alpha->GetMistaggedErrorVector();
+//
+// 				std::vector<double> cutValues = alpha->GetCutValuesVector();
+//
+//
+// 				std::cout<<"Number of beta entries = "<< beta->GetNumberOfEntries()	<<std::endl;
+//
+// 				#<{(|***********************************************************
+// 				 *******************Plotting*********************************
+// 				 |)}>#
+//
+//
+// 				{
+// 								TGraphErrors* cutBoundary = new TGraphErrors(energyValues.size(),&energyValues[0],&rejection[0],&energyErrors[0],&rejectionErrors[0]);
+// 								TCanvas * c1 = new TCanvas();
+// 								c1->cd();
+// 								c1->SetLogy();
+// 								cutBoundary->SetTitle(Form("Rejection across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
+//
+// 								cutBoundary->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
+// 								cutBoundary->GetYaxis()->SetTitle("Rejection Power");
+// 								cutBoundary->SetMaximum(10e5);
+// 								cutBoundary->Draw("ap");
+// 								c1->Print("plots/RejectionAcrossEnergy.png");
+// 				}
+// 				
+// 				{
+// 								TGraphErrors* mistagged_events= new TGraphErrors(energyValues.size(),&energyValues[0],&mistagged[0],&energyErrors[0],&mistaggedErrors[0]);
+// 								TCanvas * c1 = new TCanvas();
+// 								c1->cd();
+// 								c1->SetLogy();
+// 								mistagged_events->SetTitle(Form("Mistagged events across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
+// 								mistagged_events->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
+// 								mistagged_events->GetYaxis()->SetTitle("Mistagged events");
+// 								mistagged_events->SetMaximum(10e5);
+// 								mistagged_events->Draw("ap");
+// 								c1->Print("plots/MistaggedAcrossEnergy.png");
+// 				}
+//
+// 				{
+// 								TGraph* cutBoundary= new TGraph(energyValues.size(),&energyValues[0],&cutValues[0]);
+// 								TF1 *f_E = new TF1("f_E", "[1]*x +[0]",0,2.5);
+// 								f_E->SetLineColor(1);
+// 								f_E->SetLineStyle(2);
+// 								f_E->SetLineWidth(3);
+// 								cutBoundary->Fit(f_E);
+//
+//
+// 								TCanvas * c1= new TCanvas();
+// 								c1->cd();
+//
+// 								alpha->GetHist()->Draw();
+// 								beta->GetHist()->Draw("same");
+// 								// cutBoundary->Draw("same .");
+// 								f_E->Draw("same");
+//
+// 								TLegend* t2 = new TLegend( 0.11, 0.11, 0.31, 0.31 );
+// 								t2->AddEntry(beta->GetHist(), "#beta 's","f");
+// 								t2->AddEntry(alpha->GetHist(), "#alpha 's","f");
+// 								t2->AddEntry( f_E, "99%","l");
+// 								t2->Draw();
+//
+// 								c1->Print("plots/cutBoundary.png");
+// 				}
+// }
 void findBoundary(){
-
-				ofstream File_bi;
-				ofstream File_po;
-
-				File_bi.open("Classifier_data_bi.dat");
-				File_po.open("Classifier_data_po.dat");
-
-				File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" <<  std::endl;
-				File_po << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" << std::endl;
-
-				UTIL* util = new UTIL();
 
 
 				Cutter* alpha = new Cutter("alpha");
@@ -77,92 +173,12 @@ void findBoundary(){
 				alpha->SetHistLimits(100,0,2.5,260,-160,100);
 				beta->SetHistLimits(100,0,2.5,260,-160,100);
 
-				beta->FillCutter("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron",File_bi);
-				beta->PrintHist();
-
-				alpha->FillCutter("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha",File_po);
-				alpha->PrintHist();
-
-				File_bi.close();
-				File_po.close();
-
-
 				CutFinder* cutFinder= new CutFinder(beta,alpha);
 				cutFinder->SetThreshold(0.9999);
-				cutFinder->FindBoundary();
+				cutFinder->Holder();
+				cutFinder->Plotting();
 
 
-				std::vector<double> energyValues = alpha->GetEnergyValuesVector();
-				std::vector<double> energyErrors = alpha->GetEnergyErrorVector();
-
-				std::vector<double> rejection = alpha->GetRejectionValuesVector();
-				std::vector<double> rejectionErrors = alpha->GetRejectionErrorVector();
-
-				std::vector<double> mistagged = alpha->GetMistaggedValueVector();
-				std::vector<double> mistaggedErrors = alpha->GetMistaggedErrorVector();
-
-				std::vector<double> cutValues = alpha->GetCutValuesVector();
-
-
-				std::cout<<"Number of beta entries = "<< beta->GetNumberOfEntries()	<<std::endl;
-
-				/************************************************************
-				 *******************Plotting*********************************
-				 */
-
-
-				{
-								TGraphErrors* cutBoundary = new TGraphErrors(energyValues.size(),&energyValues[0],&rejection[0],&energyErrors[0],&rejectionErrors[0]);
-								TCanvas * c1 = new TCanvas();
-								c1->cd();
-								c1->SetLogy();
-								cutBoundary->SetTitle(Form("Rejection across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
-
-								cutBoundary->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
-								cutBoundary->GetYaxis()->SetTitle("Rejection Power");
-								cutBoundary->SetMaximum(10e5);
-								cutBoundary->Draw("ap");
-								c1->Print("plots/RejectionAcrossEnergy.png");
-				}
-				
-				{
-								TGraphErrors* mistagged_events= new TGraphErrors(energyValues.size(),&energyValues[0],&mistagged[0],&energyErrors[0],&mistaggedErrors[0]);
-								TCanvas * c1 = new TCanvas();
-								c1->cd();
-								c1->SetLogy();
-								mistagged_events->SetTitle(Form("Mistagged events across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
-								mistagged_events->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
-								mistagged_events->GetYaxis()->SetTitle("Mistagged events");
-								mistagged_events->SetMaximum(10e5);
-								mistagged_events->Draw("ap");
-								c1->Print("plots/MistaggedAcrossEnergy.png");
-				}
-
-				{
-								TGraph* cutBoundary= new TGraph(energyValues.size(),&energyValues[0],&cutValues[0]);
-								TF1 *f_E = new TF1("f_E", "[1]*x +[0]",0,2.5);
-								f_E->SetLineColor(1);
-								f_E->SetLineStyle(2);
-								f_E->SetLineWidth(3);
-								cutBoundary->Fit(f_E);
-
-
-								TCanvas * c1= new TCanvas();
-								c1->cd();
-
-								alpha->GetHist()->Draw();
-								beta->GetHist()->Draw("same");
-								// cutBoundary->Draw("same .");
-								f_E->Draw("same");
-
-								TLegend* t2 = new TLegend( 0.11, 0.11, 0.31, 0.31 );
-								t2->AddEntry(beta->GetHist(), "#beta 's","f");
-								t2->AddEntry(alpha->GetHist(), "#alpha 's","f");
-								t2->AddEntry( f_E, "99%","l");
-								t2->Draw();
-
-								c1->Print("plots/cutBoundary.png");
-				}
 }
 
 
@@ -287,13 +303,13 @@ void scan(){
 								TCanvas* c1 =new TCanvas();
 								TGraphErrors* fractionGraph = new TGraphErrors(effList.size(),&effList[0],&remainingList[0],&effListError[0],&remainingListError[0]);
 								fractionGraph ->SetTitle("Surviving #alpha 's over accepted #beta 's {mcPosr < 6000 }");
-								fractionGraph ->GetXaxis()->SetTitle("Remaining #beta 's % ");
-								fractionGraph ->GetYaxis()->SetTitle("Remaining #alpha 's % ");
+								fractionGraph ->GetXaxis()->SetTitle(Form("Remaining #%s 's % ",beta->GetPID()));
+								fractionGraph ->GetYaxis()->SetTitle(Form("Remaining #%s 's % ",alpha->GetPID()));
 								fractionGraph ->GetYaxis()->SetTitleOffset(1.4);
 								fractionGraph ->Draw("ap");
 								c1->SetGrid();
 
-								c1->Print("plots/sig_sack_alpha_highRad_6000.png");
-								c1->Print("plots/sig_sack_alpha_highRad_6000.tex");
+								c1->Print(Form("plots/sig_sack_%s_highRad_%d.png",alpha->GetPID(),alpha->GetRadialCut()));
+								c1->Print(Form("plots/sig_sack_%s_highRad_%d.tex",alpha->GetPID(),alpha->GetRadialCut()));
 				}
 }

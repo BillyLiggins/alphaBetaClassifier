@@ -86,6 +86,7 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 								Tree->GetEntry(i);
 
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
@@ -122,6 +123,7 @@ void Cutter::FillHist(TFile* file)
 								Tree->GetEntry(i);
 
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
@@ -187,8 +189,8 @@ TH2D* Cutter::GetHist(){
 }
 
 void Cutter::ApplyCut(TFile * file){
-				numberOfEntries=0;
-				remainingAfterCut=0;
+				// numberOfEntries=0;
+				// remainingAfterCut=0;
 				TTree* Tree = (TTree*) file->Get("output");
 				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
@@ -208,27 +210,76 @@ void Cutter::ApplyCut(TFile * file){
 				Tree->SetBranchAddress("evIndex",&evIndex);
 				Int_t n = (Int_t)Tree->GetEntries();
 
-				// std::cout<<"inside ApplyCut"<<std::endl;
-				// std::cout<<"Grad = "<<gradient<<std::endl;
-				// std::cout<<"Intercept = "<<intercept<<std::endl;
-
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
 								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 												
 												numberOfEntries++;
-												if(PID=="alpha"){
-																if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
-												}else if ( PID =="beta"){
-																if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
-												}else{
-																std::cout<<"Cutter needs to have a PID"<<std::endl;
-												}
+												if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
+
+												// if(PID=="alpha"){
+												// 				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
+												// }else if ( PID =="beta"){
+												// 				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
+												// }else{
+												// 				std::cout<<"Cutter needs to have a PID"<<std::endl;
+												// }
 								}
 				}
 
 				
 				file->Close();
 
+}
+
+
+void Cutter::FillCutter(std::string folder, std::string fileStart){
+
+				UTIL* util = new UTIL();
+
+				// std::vector<std::string> FileList= util->glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
+				std::vector<std::string> FileList= util->glob(folder ,fileStart);
+
+
+				for( int i=0; i<FileList.size(); i++ ){
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								// std::cout<<"Loaded file "<<FileList[i]<<std::endl;
+								this->FillHist(file);
+								file->Close();
+				}
+
+
+}
+
+void Cutter::FillCutter(std::string folder, std::string fileStart,ofstream&  File_bi){
+
+				UTIL* util = new UTIL();
+
+				std::vector<std::string> FileList= util->glob(folder ,fileStart);
+
+
+				for( int i=0; i<FileList.size(); i++ ){
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								// std::cout<<"Loaded file "<<FileList[i]<<std::endl;
+								this->FillHist(file,File_bi);
+								file->Close();
+
+				}
+
+}
+
+void Cutter::ApplyBoundary(std::string folder,std::string fileStart){
+
+
+				UTIL* util = new UTIL();
+
+				std::vector<std::string> FileList= util->glob(folder,fileStart);
+
+				for( int i=0; i<FileList.size(); i++ ){
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								this->ApplyCut(file);
+								file->Close();
+				}
 }

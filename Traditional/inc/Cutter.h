@@ -96,7 +96,7 @@ class Cutter{
 								double intercept;
 								std::string PID;
 								std::vector<double> energyValues, cutValues, Rejection_values, Rejection_errors, energy_errors, mistagged, mistagged_error;
-								std::vector<double> rejection, rejector_errors;
+								std::vector<double> rejection, rejection_errors;
 								double remainingAfterCut;
 								double percentageRemaining;
 								double percentageRemainingError;

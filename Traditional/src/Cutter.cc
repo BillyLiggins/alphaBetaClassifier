@@ -370,8 +370,8 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 												}//end of file n loop.
 
 								
-								rejection->push_back(N/N_remain);
-								rejection_errors->push_back(N/N_remain*sqrt((N+N_remain)/(N*N_remain)));
+								rejection.push_back(N/N_remain);
+								rejection_errors.push_back(N/N_remain*sqrt((N+N_remain)/(N*N_remain)));
 
 								}//energy of filelist loop.
 				for (int i = 0; i < rejection.size(); ++i) {

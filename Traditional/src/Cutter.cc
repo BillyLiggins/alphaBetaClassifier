@@ -85,7 +85,8 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								if( Qfit && evIndex==0 && mcPosr<radialCut  ){
+								// if( Qfit && evIndex==0 && mcPosr<4000  ){
 								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
@@ -97,6 +98,46 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 				file->Close();
 }
 
+void Cutter::FindNEntries(std::string folder, std::string fileStart){
+
+				UTIL* util = new UTIL();
+
+				std::vector<std::string> FileList= util->glob(folder ,fileStart);
+
+
+				for( int i=0; i<FileList.size(); i++ ){
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								// std::cout<<"Loaded file "<<FileList[i]<<std::endl;
+								TTree* Tree = (TTree*) file->Get("output");
+								Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
+								Bool_t  Qfit;
+								Int_t pdg1, pdg2, evIndex;
+								Int_t parentpdg1,parentpdg2;
+
+								Tree->SetBranchAddress("pdg1",&pdg1);
+								Tree->SetBranchAddress("pdg2",&pdg2);
+								Tree->SetBranchAddress("parentpdg1",&parentpdg1);
+								Tree->SetBranchAddress("parentpdg2",&parentpdg2);
+
+								Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
+								Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+								Tree->SetBranchAddress("posr",&posr);
+								Tree->SetBranchAddress("mcPosr",&mcPosr);
+								Tree->SetBranchAddress("fitValid",&Qfit);
+								Tree->SetBranchAddress("evIndex",&evIndex);
+								Int_t n = (Int_t)Tree->GetEntries();
+
+								for( Int_t i =0;i<n;i++){
+												Tree->GetEntry(i);
+
+												if( Qfit && evIndex==0 && mcPosr<radialCut  ){
+																numberOfEntries++;
+													}
+												}
+								file->Close();
+
+				}
+}
 void Cutter::FillHist(TFile* file)
 {
 
@@ -190,7 +231,6 @@ TH2D* Cutter::GetHist(){
 
 void Cutter::ApplyCut(TFile * file){
 				// numberOfEntries=0;
-				// remainingAfterCut=0;
 				TTree* Tree = (TTree*) file->Get("output");
 				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
@@ -213,10 +253,12 @@ void Cutter::ApplyCut(TFile * file){
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
+								if( Qfit && evIndex==0 && mcPosr<radialCut){
+								// if( Qfit && evIndex==0 && mcPosr<4000  ){
 								// if( Qfit && evIndex==0 && mcPosr<6000  ){
 												
-												numberOfEntries++;
+												// numberOfEntries is given in the FillHist method.
+
 												if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
 
 												// if(PID=="alpha"){
@@ -277,6 +319,7 @@ void Cutter::ApplyBoundary(std::string folder,std::string fileStart){
 
 				std::vector<std::string> FileList= util->glob(folder,fileStart);
 
+				// remainingAfterCut=0;
 				for( int i=0; i<FileList.size(); i++ ){
 								TFile * file= TFile::Open(FileList[i].c_str());	
 								this->ApplyCut(file);

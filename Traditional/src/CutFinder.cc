@@ -68,6 +68,7 @@ void CutFinder::FindBoundary(){
 				double startingCut=0;
 
 				// if( acceptor->GetPID().compare("beta")==0){
+				std::cout<<"got here"<<std::endl;
 				if( acceptor->GetPID()=="beta"){
 						startingCut=-1000;
 				}else if( rejector->GetPID()=="alpha"){
@@ -76,6 +77,7 @@ void CutFinder::FindBoundary(){
 				}else{
 							std::cout<<"Cutter needs a PID"<< std::endl; 
 				}
+				std::cout<<"after here"<<std::endl;
 
 				double step=0.1;
 				double cutValue=startingCut;
@@ -112,6 +114,9 @@ void CutFinder::FindBoundary(){
 								TAxis* acceptor_slice_x=slice_acceptor->GetXaxis();
 								TAxis* rejector_slice_x=slice_rejector->GetXaxis();
 
+								// std::cout<<"energy= "<<energy<<std::endl;
+								// std::cout<<"threshold = "<<threshold<<std::endl;
+								
 								while(accept<threshold){
 
 												//This loop finds the cut value to a certain threshold is achevied, it does so by incrementing by 'step'
@@ -145,6 +150,20 @@ void CutFinder::FindBoundary(){
 								TF1 *f_E = new TF1("f_E", "[1]*x +[0]",0,2.5);
 								cutBoundary->Fit(f_E);
 
+								{
+												TCanvas* c1 = new TCanvas();
+
+												f_E->SetLineColor(kBlack);
+												acceptor->GetHist()->Draw();
+												rejector->GetHist()->Draw("same");
+												f_E->Draw("same");
+
+												c1->Print("testLine.png");
+								}
+
+
+
+								//This is for passing the gradient and intercept to the cutters.
 								TFile* function = new TFile("cutBoundary.root","recreate");
 								f_E->Write();
 								function->Close();

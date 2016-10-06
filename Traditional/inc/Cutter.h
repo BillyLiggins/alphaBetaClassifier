@@ -84,7 +84,7 @@ class Cutter{
 								double GetRemainingAfterCut(){return remainingAfterCut;}
 								double SetRemainingAfterCut(double value){remainingAfterCut = value;}
 
-								void FindRejection(std::string folder,std::string fileStart){
+								void FindRejection(std::string folder,std::string fileStart);
 
 				private:
 								TH2D * BabVsEnergy;

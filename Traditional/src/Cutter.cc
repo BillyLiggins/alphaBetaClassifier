@@ -331,7 +331,7 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 				double minBin=this->GetHist()->GetXaxis()->GetXmin();
 				double maxBin=this->GetHist()->GetXaxis()->GetXmax();
 				double sliceWidth=this->GetHist()->GetXaxis()->GetBinWidth(1);
-				for (double energy = minBin; i <maxBin; energy+=sliceWidth) {
+				for (double energy = minBin; energy <maxBin; energy+=sliceWidth) {
 								double N=0;
 								double N_remain=0;
 								for( int i=0; i<FileList.size(); i++ ){
@@ -366,9 +366,9 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 												}
 
 
+								file->Close();
 												}//end of file n loop.
 
-								file->Close();
 								
 								rejection->push_back(N/N_remain);
 								rejection_errors->push_back(N/N_remain*sqrt((N+N_remain)/(N*N_remain)));

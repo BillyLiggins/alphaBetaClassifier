@@ -52,6 +52,8 @@ class Cutter{
 
 								void PrintHist();
 
+								void SetRadialCut(double rad){ radialCut= rad;}
+
 								TH2D* GetHist();
 
 
@@ -73,21 +75,25 @@ class Cutter{
 								void  EnterMistaggedError(double entry) { mistagged_error.push_back(entry);}
 								void  EnterCutValues(double entry) { cutValues.push_back(entry);}
 
-								void findCutsEnergy();
+								void findCutsEnergy(std::string folder, std::string fileStart);
 
 
+								
+								void FindNEntries(std::string folder, std::string fileStart);
 								double GetNumberOfEntries(){return numberOfEntries;}
 								double GetRemainingAfterCut(){return remainingAfterCut;}
+								double SetRemainingAfterCut(double value){remainingAfterCut = value;}
 
 				private:
 								TH2D * BabVsEnergy;
 								TH2D * BabVsEnergyPassCut;
+								double radialCut;
 								// ofstream& outputfile;
 								double numberOfEntries;
 								double gradient;
 								double intercept;
 								std::string PID;
-								std::vector<double> energyValues,cutValues, Rejection_values, Rejection_errors, energy_errors, mistagged,mistagged_error;
+								std::vector<double> energyValues, cutValues, Rejection_values, Rejection_errors, energy_errors, mistagged, mistagged_error;
 								double remainingAfterCut;
 								double percentageRemaining;
 								double percentageRemainingError;

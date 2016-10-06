@@ -43,15 +43,17 @@
 #include <numeric>
 
 void findBoundary();
-void scan();
+void scan(double rad);
 void applyBoundary();
+void scanAll();
 
 int main(){
 
 				
-				findBoundary();
-				applyBoundary();
-				// scan();
+				// findBoundary();
+				// applyBoundary();
+				scan(4000);
+				// scanAll();
 
 				return 0;
 }
@@ -74,6 +76,12 @@ void findBoundary(){
 				Cutter* alpha = new Cutter("alpha");
 				Cutter* beta = new Cutter("beta");
 
+				alpha->SetRadialCut(4000);
+				beta->SetRadialCut(4000);
+
+				// alpha->SetHistLimits(100,0,2.5,260,-160,100);
+				// beta->SetHistLimits(100,0,2.5,260,-160,100);
+
 				alpha->SetHistLimits(100,0,2.5,260,-160,100);
 				beta->SetHistLimits(100,0,2.5,260,-160,100);
 
@@ -88,7 +96,8 @@ void findBoundary(){
 
 
 				CutFinder* cutFinder= new CutFinder(beta,alpha);
-				cutFinder->SetThreshold(0.9999);
+				// cutFinder->SetThreshold(0.800);
+				cutFinder->SetThreshold(0.99);
 				cutFinder->FindBoundary();
 
 
@@ -108,6 +117,7 @@ void findBoundary(){
 
 				/************************************************************
 				 *******************Plotting*********************************
+				 ************************************************************
 				 */
 
 
@@ -116,7 +126,7 @@ void findBoundary(){
 								TCanvas * c1 = new TCanvas();
 								c1->cd();
 								c1->SetLogy();
-								cutBoundary->SetTitle(Form("Rejection across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
+								cutBoundary->SetTitle(Form("Rejection across energy with %.2f\%  #beta retention",cutFinder->GetThreshold()*100));
 
 								cutBoundary->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
 								cutBoundary->GetYaxis()->SetTitle("Rejection Power");
@@ -130,7 +140,7 @@ void findBoundary(){
 								TCanvas * c1 = new TCanvas();
 								c1->cd();
 								c1->SetLogy();
-								mistagged_events->SetTitle(Form("Mistagged events across energy with %.0f\% #beta retention",cutFinder->GetThreshold()*100));
+								mistagged_events->SetTitle(Form("Mistagged events across energy with %.2f\%  #beta retention",cutFinder->GetThreshold()*100));
 								mistagged_events->GetXaxis()->SetTitle("mcEdepQuenched (MeV)");
 								mistagged_events->GetYaxis()->SetTitle("Mistagged events");
 								mistagged_events->SetMaximum(10e5);
@@ -179,20 +189,30 @@ void applyBoundary(){
 				Cutter* alpha = new Cutter("alpha");
 				Cutter* beta = new Cutter("beta");
 
+
+				alpha->SetRadialCut(4000);
+				beta->SetRadialCut(4000);
+
+				beta->FindNEntries("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
+				alpha->FindNEntries("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
+
 				TFile *cutBoundary = TFile::Open("cutBoundary.root");
 				TF1 * f_E =(TF1*) cutBoundary->Get("f_E");	
 
 				double Intercept = f_E->GetParameter(0);
 				double Gradient = f_E->GetParameter(1);
 
-				alpha ->SetIntercept(Intercept);
+				alpha->SetIntercept(Intercept);
 				alpha->SetGradient(Gradient);
 
 				beta->SetIntercept(Intercept);
 				beta->SetGradient(Gradient);
 
-				alpha->SetHistLimits(25,0,2.5,260,-160,100);
-				beta->SetHistLimits(25,0,2.5,260,-160,100);
+				// alpha->SetHistLimits(25,0,2.5,260,-160,100);
+				// beta->SetHistLimits(25,0,2.5,260,-160,100);
+
+				alpha->SetHistLimits(100,0,2.5,260,-160,100);
+				beta->SetHistLimits(100,0,2.5,260,-160,100);
 
 				for( int i=0; i<betaFileList.size(); i++ ){
 								TFile * file= TFile::Open(betaFileList[i].c_str());	
@@ -205,6 +225,7 @@ void applyBoundary(){
 				}
 				
 				beta->SetRemainingPercentage((beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries()));
+
 				std::cout<<"======================================================="<<std::endl;
 				std::cout<<"For the beta Cutter"<<std::endl;
 				std::cout<<"Before and after the linear cut:"<<std::endl;
@@ -225,13 +246,23 @@ void applyBoundary(){
 
 
 
+void scanAll(){
+				for(double rad=4000;rad<6001;rad+=1000){
+								scan(rad);
+				}
+}
 
-void scan(){
+void scan(double radCut){
 
 				UTIL* util = new UTIL();
 
 				Cutter* alpha = new Cutter("alpha");
 				Cutter* beta = new Cutter("beta");
+
+				// double radCut=6000;
+
+				alpha->SetRadialCut(radCut);
+				beta->SetRadialCut(radCut);
 
 				alpha->SetHistLimits(100,0,2.5,260,-160,100);
 				beta->SetHistLimits(100,0,2.5,260,-160,100);
@@ -243,7 +274,9 @@ void scan(){
 				std::vector<double>  effListError, effList;
 				std::vector<double>  remainingListError, remainingList;
 
-				for( double eff= 0.99; eff<1;eff+=0.0001){
+				// for( double eff= 0.99; eff<1;eff+=0.0001){
+				for( double eff= 0.60; eff<=0.8;eff+=0.04){
+				// for( double eff= 0.99; eff<=0.991;eff+=0.001){
 								CutFinder* cutFinder= new CutFinder(beta,alpha);
 								cutFinder->SetThreshold(eff);
 								cutFinder->FindBoundary();
@@ -252,13 +285,16 @@ void scan(){
 
 								alpha->ApplyBoundary("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
 
+								std::cout<<"eff = "<<eff<<std::endl;
+								std::cout<<"beta->GetRemainingAfterCut() = "<<beta->GetRemainingAfterCut()<<std::endl;
+								std::cout<<"beta->GetNumberOfEntries() = "<<beta->GetNumberOfEntries()<<std::endl;
 								beta->SetRemainingPercentage( (beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries()) );
 								std::cout<<"======================================================="<<std::endl;
 								std::cout<<"For the beta Cutter"<<std::endl;
 								std::cout<<"Before and after the linear cut:"<<std::endl;
 								std::cout<<"Before cut "<< beta->GetNumberOfEntries()<<" entries existed"<<std::endl;
 								std::cout<<"After cut "<< beta->GetRemainingAfterCut()<<" entries existed"<<std::endl;
-								std::cout<<"Remaining after the being cut away as a percentage = "<<(beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries())<< std::endl;
+								std::cout<<"Remaining after the being cut away as a percentage = "<<(beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries())<<"+/- "<<beta->GetRemainingPercentageError()<<std::endl;
 								std::cout<<"======================================================="<<std::endl;
 
 								alpha->SetRemainingPercentage( (alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries()) );
@@ -267,13 +303,15 @@ void scan(){
 								std::cout<<"Before and after the linear cut:"<<std::endl;
 								std::cout<<"Before cut "<< alpha->GetNumberOfEntries()<<" entries existed"<<std::endl;
 								std::cout<<"After cut "<< alpha->GetRemainingAfterCut()<<" entries existed"<<std::endl;
-								std::cout<<"Remaining after the being cut away as a percentage = "<<(alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries())<< std::endl;
+								std::cout<<"Remaining after the being cut away as a percentage = "<<(alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries())<<"+/-"<< alpha->GetRemainingPercentageError()<< std::endl;
 								std::cout<<"======================================================="<<std::endl;
 
 								effList.push_back(beta->GetRemainingPercentage());
 								effListError.push_back(beta->GetRemainingPercentageError());
 								remainingList.push_back(alpha->GetRemainingPercentage());
 								remainingListError.push_back(alpha->GetRemainingPercentageError());
+								alpha->SetRemainingAfterCut(0.);
+								beta->SetRemainingAfterCut(0.);
 				}
 
 				for(int i =0 ; i< effList.size();i++){
@@ -281,19 +319,27 @@ void scan(){
 								std::cout<<"beta eff = "<<effList[i]<<" gives "<<remainingList[i]<<" alpha particles remaining."<<std::endl;
 				}
 
-
 				
 				{
 								TCanvas* c1 =new TCanvas();
 								TGraphErrors* fractionGraph = new TGraphErrors(effList.size(),&effList[0],&remainingList[0],&effListError[0],&remainingListError[0]);
-								fractionGraph ->SetTitle("Surviving #alpha 's over accepted #beta 's {mcPosr < 6000 }");
+								fractionGraph ->SetTitle(Form("Surviving #alpha 's over accepted #beta 's {mcPosr < %0.f }",radCut));
 								fractionGraph ->GetXaxis()->SetTitle("Remaining #beta 's % ");
 								fractionGraph ->GetYaxis()->SetTitle("Remaining #alpha 's % ");
 								fractionGraph ->GetYaxis()->SetTitleOffset(1.4);
 								fractionGraph ->Draw("ap");
 								c1->SetGrid();
 
-								c1->Print("plots/sig_sack_alpha_highRad_6000.png");
-								c1->Print("plots/sig_sack_alpha_highRad_6000.tex");
+								// c1->Print(Form("plots/sig_sack_alpha_highRad_%f.png",radCut));
+								// c1->Print(Form("plots/sig_sack_alpha_highRad_%f.tex",radCut));
+
+								c1->Print(Form("sig_sack_alpha_highRad_%f.png",radCut));
+								c1->Print(Form("sig_sack_alpha_highRad_%f.tex",radCut));
+
+								TFile outFile("plots/scan.root","update");
+								// fractionGraph.SetName(Form("radCut=%f",radCut));
+								fractionGraph->Write();
+								outFile.Close();
 				}
+
 }

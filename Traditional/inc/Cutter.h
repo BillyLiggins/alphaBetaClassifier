@@ -84,6 +84,8 @@ class Cutter{
 								double GetRemainingAfterCut(){return remainingAfterCut;}
 								double SetRemainingAfterCut(double value){remainingAfterCut = value;}
 
+								void FindRejection(std::string folder,std::string fileStart){
+
 				private:
 								TH2D * BabVsEnergy;
 								TH2D * BabVsEnergyPassCut;
@@ -94,6 +96,7 @@ class Cutter{
 								double intercept;
 								std::string PID;
 								std::vector<double> energyValues, cutValues, Rejection_values, Rejection_errors, energy_errors, mistagged, mistagged_error;
+								std::vector<double> rejection, rejector_errors;
 								double remainingAfterCut;
 								double percentageRemaining;
 								double percentageRemainingError;

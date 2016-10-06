@@ -50,9 +50,9 @@ void scanAll();
 int main(){
 
 				
-				// findBoundary();
-				// applyBoundary();
-				scan(4000);
+				findBoundary();
+				applyBoundary();
+				// scan(4000);
 				// scanAll();
 
 				return 0;
@@ -233,6 +233,7 @@ void applyBoundary(){
 				std::cout<<"After cut "<< beta->GetRemainingAfterCut()<<" entries existed"<<std::endl;
 				std::cout<<"Remaining after the being cut away as a percentage = "<<(beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries())<< std::endl;
 				std::cout<<"======================================================="<<std::endl;
+				beta->FindRejection();
 
 				alpha->SetRemainingPercentage((alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries()));
 				std::cout<<"======================================================="<<std::endl;
@@ -242,6 +243,9 @@ void applyBoundary(){
 				std::cout<<"After cut "<< alpha->GetRemainingAfterCut()<<" entries existed"<<std::endl;
 				std::cout<<"Remaining after the being cut away as a percentage = "<<(alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries())<< std::endl;
 				std::cout<<"======================================================="<<std::endl;
+				alpha->FindRejection();
+				
+
 }
 
 

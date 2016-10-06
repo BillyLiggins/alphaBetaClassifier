@@ -261,13 +261,6 @@ void Cutter::ApplyCut(TFile * file){
 
 												if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
 
-												// if(PID=="alpha"){
-												// 				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
-												// }else if ( PID =="beta"){
-												// 				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
-												// }else{
-												// 				std::cout<<"Cutter needs to have a PID"<<std::endl;
-												// }
 								}
 				}
 
@@ -325,4 +318,64 @@ void Cutter::ApplyBoundary(std::string folder,std::string fileStart){
 								this->ApplyCut(file);
 								file->Close();
 				}
+}
+
+void Cutter::FindRejection(std::string folder,std::string fileStart){
+
+
+				UTIL* util = new UTIL();
+
+				std::vector<std::string> FileList= util->glob(folder,fileStart);
+
+				// remainingAfterCut=0;
+				double minBin=this->GetHist()->GetXaxis()->GetXmin();
+				double maxBin=this->GetHist()->GetXaxis()->GetXmax();
+				double sliceWidth=this->GetHist()->GetXaxis()->GetBinWidth(1);
+				for (double energy = minBin; i <maxBin; energy+=sliceWidth) {
+								double N=0;
+								double N_remain=0;
+								for( int i=0; i<FileList.size(); i++ ){
+											
+							
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								// this->ApplyCut(file);
+								TTree* Tree = (TTree*) file->Get("output");
+								Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
+								Bool_t  Qfit;
+								Int_t pdg1, pdg2, evIndex;
+								Int_t parentpdg1,parentpdg2;
+
+								Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
+								Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+								Tree->SetBranchAddress("posr",&posr);
+								Tree->SetBranchAddress("mcPosr",&mcPosr);
+								Tree->SetBranchAddress("fitValid",&Qfit);
+								Tree->SetBranchAddress("evIndex",&evIndex);
+								Int_t n = (Int_t)Tree->GetEntries();
+
+								for( Int_t i =0;i<n;i++){
+												Tree->GetEntry(i);
+
+												if( Qfit && evIndex==0 && mcPosr<radialCut){
+																if(energy<mcEdepQuenched && mcEdepQuenched<energy+sliceWidth){
+																				N++;
+																				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) N_remain++;
+
+																				}
+																}
+												}
+
+
+												}//end of file n loop.
+
+								file->Close();
+								
+								rejection->push_back(N/N_remain);
+								rejection_errors->push_back(N/N_remain*sqrt((N+N_remain)/(N*N_remain)));
+
+								}//energy of filelist loop.
+				for (int i = 0; i < rejection.size(); ++i) {
+								std::cout<<"rejection = "<<rejection[i]<<" +/- "<<rejection_errors[i]<<std::endl;
+				}
+
 }

@@ -67,17 +67,13 @@ void CutFinder::FindBoundary(){
 
 				double startingCut=0;
 
-				// if( acceptor->GetPID().compare("beta")==0){
-				std::cout<<"got here"<<std::endl;
 				if( acceptor->GetPID()=="beta"){
-						startingCut=-1000;
+								startingCut=-1000;
 				}else if( rejector->GetPID()=="alpha"){
-
-						startingCut=4000;
+								startingCut=4000;
 				}else{
-							std::cout<<"Cutter needs a PID"<< std::endl; 
+								std::cout<<"Cutter needs a PID"<< std::endl; 
 				}
-				std::cout<<"after here"<<std::endl;
 
 				double step=0.1;
 				double cutValue=startingCut;
@@ -87,9 +83,6 @@ void CutFinder::FindBoundary(){
 				double minBin=acceptor->GetHist()->GetXaxis()->GetXmin();
 				double maxBin=acceptor->GetHist()->GetXaxis()->GetXmax();
 				double sliceWidth=acceptor->GetHist()->GetXaxis()->GetBinWidth(1);
-				std::cout<<"minBin = "<<minBin<<std::endl;
-				std::cout<<"maxBin = "<<maxBin<<std::endl;
-				std::cout<<"sliceWidth = "<<sliceWidth<<std::endl;
 				TAxis* accept_x=acceptor->GetHist()->GetXaxis();
 				TAxis* reject_x=rejector->GetHist()->GetXaxis();
 
@@ -101,7 +94,6 @@ void CutFinder::FindBoundary(){
 
 				for(double energy =minBin; energy<maxBin-sliceWidth;energy+=sliceWidth){
 
-								// std::cout<<"Finding cut in energy slice "<<energy<<"< E < "<<energy+sliceWidth<<std::endl;
 
 								//These histograms contain the sliced projections
 								TH1D* slice_acceptor=acceptor->GetHist()->ProjectionY(SSTR(energy).c_str(),accept_x->FindBin(energy),accept_x->FindBin(energy+sliceWidth));
@@ -114,9 +106,6 @@ void CutFinder::FindBoundary(){
 								TAxis* acceptor_slice_x=slice_acceptor->GetXaxis();
 								TAxis* rejector_slice_x=slice_rejector->GetXaxis();
 
-								// std::cout<<"energy= "<<energy<<std::endl;
-								// std::cout<<"threshold = "<<threshold<<std::endl;
-								
 								while(accept<threshold){
 
 												//This loop finds the cut value to a certain threshold is achevied, it does so by incrementing by 'step'
@@ -146,9 +135,11 @@ void CutFinder::FindBoundary(){
 								cutValue=startingCut;
 								accept=0;
 				}
-								TGraph* cutBoundary= new TGraph(rejector->GetEnergyValuesVector().size(),&(rejector->GetEnergyValuesVector())[0],&(rejector->GetCutValuesVector())[0]);
+								// TGraph* cutBoundary= new TGraph(rejector->GetEnergyValuesVector().size(),&(rejector->GetEnergyValuesVector())[0],&(rejector->GetCutValuesVector())[0]);
+								TGraph cutBoundary(rejector->GetEnergyValuesVector().size(),&(rejector->GetEnergyValuesVector())[0],&(rejector->GetCutValuesVector())[0]);
+								std::cout<<"size of rejector->GetEnergyValuesVector().size() = "<<rejector->GetEnergyValuesVector().size()<<std::endl;
 								TF1 *f_E = new TF1("f_E", "[1]*x +[0]",0,2.5);
-								cutBoundary->Fit(f_E);
+								cutBoundary.Fit(f_E);
 
 								{
 												TCanvas* c1 = new TCanvas();

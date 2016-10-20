@@ -60,43 +60,6 @@
 
 
 
-void Cutter::FillHist(TFile* file,ofstream& outputfile)
-{
-
-				TTree* Tree = (TTree*) file->Get("output");
-				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
-				Bool_t  Qfit;
-				Int_t pdg1, pdg2, evIndex;
-				Int_t parentpdg1,parentpdg2;
-
-				Tree->SetBranchAddress("pdg1",&pdg1);
-				Tree->SetBranchAddress("pdg2",&pdg2);
-				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
-				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
-
-				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
-				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
-				Tree->SetBranchAddress("posr",&posr);
-				Tree->SetBranchAddress("mcPosr",&mcPosr);
-				Tree->SetBranchAddress("fitValid",&Qfit);
-				Tree->SetBranchAddress("evIndex",&evIndex);
-				Int_t n = (Int_t)Tree->GetEntries();
-
-				for( Int_t i =0;i<n;i++){
-								Tree->GetEntry(i);
-
-								if( Qfit && evIndex==0 && mcPosr<radialCut  ){
-								// if( Qfit && evIndex==0 && mcPosr<4000  ){
-								// if( Qfit && evIndex==0 && mcPosr<6000  ){
-
-												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
-												numberOfEntries++;
-												outputfile<< mcEdepQuenched<<","<<posr<<","<< berkeleyAlphaBeta << std::endl;
-								}
-				}
-
-				file->Close();
-}
 
 void Cutter::FindNEntries(std::string folder, std::string fileStart){
 
@@ -111,13 +74,8 @@ void Cutter::FindNEntries(std::string folder, std::string fileStart){
 								TTree* Tree = (TTree*) file->Get("output");
 								Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 								Bool_t  Qfit;
-								Int_t pdg1, pdg2, evIndex;
+								Int_t evIndex;
 								Int_t parentpdg1,parentpdg2;
-
-								Tree->SetBranchAddress("pdg1",&pdg1);
-								Tree->SetBranchAddress("pdg2",&pdg2);
-								Tree->SetBranchAddress("parentpdg1",&parentpdg1);
-								Tree->SetBranchAddress("parentpdg2",&parentpdg2);
 
 								Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 								Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
@@ -138,19 +96,33 @@ void Cutter::FindNEntries(std::string folder, std::string fileStart){
 
 				}
 }
-void Cutter::FillHist(TFile* file)
+
+void Cutter::FindTotalNEntries(std::string folder, std::string fileStart){
+
+				UTIL* util = new UTIL();
+
+				std::vector<std::string> FileList= util->glob(folder ,fileStart);
+
+				for( int i=0; i<FileList.size(); i++ ){
+								TFile * file= TFile::Open(FileList[i].c_str());	
+								TTree* Tree = (TTree*) file->Get("output");
+								Int_t n = (Int_t)Tree->GetEntries();
+
+								TotalNumberOfEntries+=n;
+								file->Close();
+
+				}
+}
+
+void Cutter::FillHist(TFile* file,ofstream& outputfile)
 {
 
 				TTree* Tree = (TTree*) file->Get("output");
 				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
-				Int_t pdg1, pdg2, evIndex;
+				Int_t evIndex;
 				Int_t parentpdg1,parentpdg2;
 
-				Tree->SetBranchAddress("pdg1",&pdg1);
-				Tree->SetBranchAddress("pdg2",&pdg2);
-				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
-				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
 
 				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
@@ -163,8 +135,36 @@ void Cutter::FillHist(TFile* file)
 				for( Int_t i =0;i<n;i++){
 								Tree->GetEntry(i);
 
-								if( Qfit && evIndex==0 && mcPosr<4000  ){
-								// if( Qfit && evIndex==0 && mcPosr<6000  ){
+								if( Qfit && evIndex==0 && mcPosr<radialCut  ){
+												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
+												numberOfEntries++;
+												outputfile<< mcEdepQuenched<<","<<posr<<","<< berkeleyAlphaBeta << std::endl;
+								}
+				}
+
+				file->Close();
+}
+
+void Cutter::FillHist(TFile* file)
+{
+
+				TTree* Tree = (TTree*) file->Get("output");
+				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
+				Bool_t  Qfit;
+				Int_t evIndex;
+
+				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
+				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
+				Tree->SetBranchAddress("posr",&posr);
+				Tree->SetBranchAddress("mcPosr",&mcPosr);
+				Tree->SetBranchAddress("fitValid",&Qfit);
+				Tree->SetBranchAddress("evIndex",&evIndex);
+				Int_t n = (Int_t)Tree->GetEntries();
+
+				for( Int_t i =0;i<n;i++){
+								Tree->GetEntry(i);
+
+								if( Qfit && evIndex==0 && mcPosr<radialCut){
 
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
@@ -173,6 +173,9 @@ void Cutter::FillHist(TFile* file)
 
 				file->Close();
 }
+
+
+
 
 void Cutter::SetHistLimits(double Ebins,double ELow,double EHigh,double BabBins, double BabLow, double BabHigh){
 
@@ -223,24 +226,11 @@ void Cutter::PrintHist(){
 
 }
 
-
-TH2D* Cutter::GetHist(){
-
-				return BabVsEnergy;
-}
-
 void Cutter::ApplyCut(TFile * file){
-				// numberOfEntries=0;
 				TTree* Tree = (TTree*) file->Get("output");
 				Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 				Bool_t  Qfit;
-				Int_t pdg1, pdg2, evIndex;
-				Int_t parentpdg1,parentpdg2;
-
-				Tree->SetBranchAddress("pdg1",&pdg1);
-				Tree->SetBranchAddress("pdg2",&pdg2);
-				Tree->SetBranchAddress("parentpdg1",&parentpdg1);
-				Tree->SetBranchAddress("parentpdg2",&parentpdg2);
+				Int_t  evIndex;
 
 				Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 				Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
@@ -254,21 +244,12 @@ void Cutter::ApplyCut(TFile * file){
 								Tree->GetEntry(i);
 
 								if( Qfit && evIndex==0 && mcPosr<radialCut){
-								// if( Qfit && evIndex==0 && mcPosr<4000  ){
-								// if( Qfit && evIndex==0 && mcPosr<6000  ){
-												
-												// numberOfEntries is given in the FillHist method.
-
+												// NumberOfEntries is given in the FillHist method.
 												if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) remainingAfterCut++;
-
 								}
 				}
-
-				
 				file->Close();
-
 }
-
 
 void Cutter::FillCutter(std::string folder, std::string fileStart){
 
@@ -276,7 +257,6 @@ void Cutter::FillCutter(std::string folder, std::string fileStart){
 
 				// std::vector<std::string> FileList= util->glob("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
 				std::vector<std::string> FileList= util->glob(folder ,fileStart);
-
 
 				for( int i=0; i<FileList.size(); i++ ){
 								TFile * file= TFile::Open(FileList[i].c_str());	
@@ -300,7 +280,6 @@ void Cutter::FillCutter(std::string folder, std::string fileStart,ofstream&  Fil
 								// std::cout<<"Loaded file "<<FileList[i]<<std::endl;
 								this->FillHist(file,File_bi);
 								file->Close();
-
 				}
 
 }
@@ -312,12 +291,13 @@ void Cutter::ApplyBoundary(std::string folder,std::string fileStart){
 
 				std::vector<std::string> FileList= util->glob(folder,fileStart);
 
-				// remainingAfterCut=0;
 				for( int i=0; i<FileList.size(); i++ ){
 								TFile * file= TFile::Open(FileList[i].c_str());	
 								this->ApplyCut(file);
 								file->Close();
 				}
+
+				this->SetRemainingPercentage( (this->GetRemainingAfterCut())*100/(this->GetNumberOfEntries()) );
 }
 
 void Cutter::FindRejection(std::string folder,std::string fileStart){
@@ -326,12 +306,15 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 				UTIL* util = new UTIL();
 
 				std::vector<std::string> FileList= util->glob(folder,fileStart);
+				std::vector<double>  E, Eerror;
 
-				// remainingAfterCut=0;
 				double minBin=this->GetHist()->GetXaxis()->GetXmin();
 				double maxBin=this->GetHist()->GetXaxis()->GetXmax();
 				double sliceWidth=this->GetHist()->GetXaxis()->GetBinWidth(1);
 				for (double energy = minBin; energy <maxBin; energy+=sliceWidth) {
+								E.push_back(energy+sliceWidth/2);
+								Eerror.push_back(sliceWidth/2);
+								std::cout<<"energy = "<< energy <<std::endl;
 								double N=0;
 								double N_remain=0;
 								for( int i=0; i<FileList.size(); i++ ){
@@ -342,8 +325,7 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 								TTree* Tree = (TTree*) file->Get("output");
 								Double_t berkeleyAlphaBeta, mcEdepQuenched,posr,mcPosr;
 								Bool_t  Qfit;
-								Int_t pdg1, pdg2, evIndex;
-								Int_t parentpdg1,parentpdg2;
+								Int_t evIndex;
 
 								Tree->SetBranchAddress("berkeleyAlphaBeta",&berkeleyAlphaBeta);
 								Tree->SetBranchAddress("mcEdepQuenched",&mcEdepQuenched);
@@ -359,6 +341,7 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 												if( Qfit && evIndex==0 && mcPosr<radialCut){
 																if(energy<mcEdepQuenched && mcEdepQuenched<energy+sliceWidth){
 																				N++;
+																				//This cut is if below the line then you pass. So beta should be high and alpha should be low.
 																				if(berkeleyAlphaBeta<(gradient*mcEdepQuenched+intercept)) N_remain++;
 
 																				}
@@ -374,8 +357,29 @@ void Cutter::FindRejection(std::string folder,std::string fileStart){
 								rejection_errors.push_back(N/N_remain*sqrt((N+N_remain)/(N*N_remain)));
 
 								}//energy of filelist loop.
+
 				for (int i = 0; i < rejection.size(); ++i) {
 								std::cout<<"rejection = "<<rejection[i]<<" +/- "<<rejection_errors[i]<<std::endl;
 				}
 
+				{
+								TCanvas* c1 =new TCanvas();
+								TGraphErrors* rejectionGraph = new TGraphErrors(rejection.size(),&E[0],&rejection[0],&Eerror[0],&rejection_errors[0]);
+								rejectionGraph->SetTitle(Form("%s rejection across energy {mcPosr < %0.f }",this->GetPID().c_str(),this->GetRadialCut()));
+								rejectionGraph->GetXaxis()->SetTitle("mcEdepQuenched (MeV) ");
+								rejectionGraph->GetYaxis()->SetTitle("Rejection");
+								rejectionGraph->GetYaxis()->SetTitleOffset(1.4);
+								rejectionGraph->Draw("ap");
+								c1->SetLogy();
+								c1->SetGrid();
+
+								c1->Print(Form("plots/%s_rejection_across_energy_%f.png",this->GetPID().c_str(),this->GetRadialCut()));
+								c1->Print(Form("plots/%s_rejection_across_energy_%f.tex",this->GetPID().c_str(),this->GetRadialCut()));
+
+
+								TFile outFile("plots/Rejection.root","update");
+								// fractionGraph.SetName(Form("radCut=%f",radCut));
+								rejectionGraph->Write();
+								outFile.Close();
+				}
 }

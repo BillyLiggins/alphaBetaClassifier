@@ -53,8 +53,9 @@ class Cutter{
 								void PrintHist();
 
 								void SetRadialCut(double rad){ radialCut= rad;}
+								double GetRadialCut(){ return radialCut;}
 
-								TH2D* GetHist();
+								TH2D* GetHist(){ return BabVsEnergy;}
 
 
 								std::string GetPID() const {return PID;}
@@ -80,9 +81,10 @@ class Cutter{
 
 								
 								void FindNEntries(std::string folder, std::string fileStart);
+								void FindTotalNEntries(std::string folder, std::string fileStart);
 								double GetNumberOfEntries(){return numberOfEntries;}
 								double GetRemainingAfterCut(){return remainingAfterCut;}
-								double SetRemainingAfterCut(double value){remainingAfterCut = value;}
+								void SetRemainingAfterCut(double value){remainingAfterCut = value;}
 
 								void FindRejection(std::string folder,std::string fileStart);
 
@@ -91,7 +93,7 @@ class Cutter{
 								TH2D * BabVsEnergyPassCut;
 								double radialCut;
 								// ofstream& outputfile;
-								double numberOfEntries;
+								double  numberOfEntries,TotalNumberOfEntries;
 								double gradient;
 								double intercept;
 								std::string PID;

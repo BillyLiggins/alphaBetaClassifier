@@ -26,7 +26,7 @@ public:
 			 	CutFinder(Cutter* acceptor,Cutter* rejector): acceptor(acceptor), rejector(rejector){
 				}
 
-				~CutFinder(){
+				~CutFinder(){;
 				}
 				void FindBoundary();
 				// void FindCutValue();

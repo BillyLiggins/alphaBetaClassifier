@@ -51,13 +51,18 @@ void scanAll();
 
 int main(){
 
-				// findBoundary(4000);
-				// applyBoundary(4000);
-				//
-				// findBoundary(4000);
-				// applyBoundary(4000);
+				findBoundary(4000);
+				applyBoundary(4000);
+
+				findBoundary(5000);
+				applyBoundary(5000);
+				
+				findBoundary(6000);
+				applyBoundary(6000);
+
+
 				// scan(4000);
-				scanAll();
+				// scanAll();
 
 				return 0;
 }

@@ -51,14 +51,14 @@ void scanAll();
 
 int main(){
 
-				findBoundary(4000);
-				applyBoundary(4000);
-
-				findBoundary(5000);
-				applyBoundary(5000);
-				
+				// findBoundary(4000);
+				// applyBoundary(4000);
+        //
+				// findBoundary(5000);
+				// applyBoundary(5000);
+				//
 				findBoundary(6000);
-				applyBoundary(6000);
+				// applyBoundary(6000);
 
 
 				// scan(4000);
@@ -98,7 +98,7 @@ void findBoundary(double radCut){
 				File_po.open("Classifier_data_po.dat");
 
 				File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" <<  std::endl;
-				File_po << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" << std::endl;
+				File_po << "mcEdepQuenched,"<<"mcPosr," << "BerekelyAlphaBeta" << "FitValid" << "evIndex" << std::endl;
 
 				UTIL* util = new UTIL();
 
@@ -239,41 +239,66 @@ void applyBoundary(double radCut){
 				alpha->SetHistLimits(5,0,2.5,260,-160,100);
 				beta->SetHistLimits(5,0,2.5,260,-160,100);
 
-				// alpha->SetHistLimits(100,0,2.5,260,-160,100);
-				// beta->SetHistLimits(100,0,2.5,260,-160,100);
+				beta->ApplyBoundary("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
+				alpha->ApplyBoundary("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
 
-				for( int i=0; i<betaFileList.size(); i++ ){
-								TFile * file= TFile::Open(betaFileList[i].c_str());	
-								beta->ApplyCut(file);
-				}
 
-				for( int i=0; i<alphaFileList.size(); i++ ){
-								TFile * file= TFile::Open(alphaFileList[i].c_str());	
-								alpha->ApplyCut(file);
-				}
+				// for( int i=0; i<betaFileList.size(); i++ ){
+				// 				TFile * file= TFile::Open(betaFileList[i].c_str());	
+				// 				beta->ApplyCut(file);
+				// }
+        //
+				// for( int i=0; i<alphaFileList.size(); i++ ){
+				// 				TFile * file= TFile::Open(alphaFileList[i].c_str());	
+				// 				alpha->ApplyCut(file);
+				// }
 				
-				beta->SetRemainingPercentage((beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries()));
+				// beta->SetRemainingPercentage((beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries()));
+        //
+				// std::cout<<"======================================================="<<std::endl;
+				// std::cout<<"For the beta Cutter"<<std::endl;
+				// std::cout<<"Before and after the linear cut:"<<std::endl;
+				// std::cout<<"Before cut "<< beta->GetNumberOfEntries()<<" entries existed"<<std::endl;
+				// std::cout<<"After cut "<< beta->GetRemainingAfterCut()<<" entries existed"<<std::endl;
+				// std::cout<<"Remaining after the being cut away as a percentage = "<<(beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries())<< std::endl;
+				// std::cout<<"======================================================="<<std::endl;
+				// // beta->FindRejection("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
+        //
+				// alpha->SetRemainingPercentage((alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries()));
+				// std::cout<<"======================================================="<<std::endl;
+				// std::cout<<"For the alpha Cutter"<<std::endl;
+				// std::cout<<"Before and after the linear cut:"<<std::endl;
+				// std::cout<<"Before cut "<< alpha->GetNumberOfEntries()<<" entries existed"<<std::endl;
+				// std::cout<<"After cut "<< alpha->GetRemainingAfterCut()<<" entries existed"<<std::endl;
+				// std::cout<<"Remaining after the being cut away as a percentage = "<<(alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries())<< std::endl;
+				// std::cout<<"======================================================="<<std::endl;
+        //
+				// alpha->FindRejection("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
+				
+
+				std::cout<<"eff = 1"<<std::endl;
+				std::cout<<"rad = "<<radCut<<std::endl;
+				std::cout<<std::endl;
 
 				std::cout<<"======================================================="<<std::endl;
 				std::cout<<"For the beta Cutter"<<std::endl;
 				std::cout<<"Before and after the linear cut:"<<std::endl;
+				std::cout<<std::endl;
 				std::cout<<"Before cut "<< beta->GetNumberOfEntries()<<" entries existed"<<std::endl;
 				std::cout<<"After cut "<< beta->GetRemainingAfterCut()<<" entries existed"<<std::endl;
-				std::cout<<"Remaining after the being cut away as a percentage = "<<(beta->GetRemainingAfterCut())*100/(beta->GetNumberOfEntries())<< std::endl;
+				std::cout<<std::endl;
+				std::cout<<"Remaining after the being cut away as a percentage = "<<beta->GetRemainingPercentage()<<"+/- "<<beta->GetRemainingPercentageError()<<std::endl;
 				std::cout<<"======================================================="<<std::endl;
-				// beta->FindRejection("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output_electron/ntuple","electron");
 
-				alpha->SetRemainingPercentage((alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries()));
 				std::cout<<"======================================================="<<std::endl;
 				std::cout<<"For the alpha Cutter"<<std::endl;
 				std::cout<<"Before and after the linear cut:"<<std::endl;
+				std::cout<<std::endl;
 				std::cout<<"Before cut "<< alpha->GetNumberOfEntries()<<" entries existed"<<std::endl;
 				std::cout<<"After cut "<< alpha->GetRemainingAfterCut()<<" entries existed"<<std::endl;
-				std::cout<<"Remaining after the being cut away as a percentage = "<<(alpha->GetRemainingAfterCut())*100/(alpha->GetNumberOfEntries())<< std::endl;
+				std::cout<<std::endl;
+				std::cout<<"Remaining after the being cut away as a percentage = "<<alpha->GetRemainingPercentage()<<"+/-"<< alpha->GetRemainingPercentageError()<< std::endl;
 				std::cout<<"======================================================="<<std::endl;
-
-				alpha->FindRejection("/data/snoplus/liggins/year1/fitting/fitting/alphaSims/output/ntuple","alpha");
-				
 
 }
 

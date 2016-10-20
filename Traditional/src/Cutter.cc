@@ -138,7 +138,7 @@ void Cutter::FillHist(TFile* file,ofstream& outputfile)
 								if( Qfit && evIndex==0 && mcPosr<radialCut  ){
 												BabVsEnergy->Fill(mcEdepQuenched,berkeleyAlphaBeta);
 												numberOfEntries++;
-												outputfile<< mcEdepQuenched<<","<<posr<<","<< berkeleyAlphaBeta << std::endl;
+												outputfile<< mcEdepQuenched<<","<<posr<<","<< berkeleyAlphaBeta<<","<< Qfit <<","<< evIndex << std::endl;
 								}
 				}
 

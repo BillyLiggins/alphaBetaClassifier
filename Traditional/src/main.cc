@@ -97,7 +97,7 @@ void findBoundary(double radCut){
 				File_bi.open("Classifier_data_bi.dat");
 				File_po.open("Classifier_data_po.dat");
 
-				File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" <<  std::endl;
+				File_bi << "mcEdepQuenched,"<<"posr," << "BerekelyAlphaBeta" << "FitValid" << "evIndex" << std::endl;
 				File_po << "mcEdepQuenched,"<<"mcPosr," << "BerekelyAlphaBeta" << "FitValid" << "evIndex" << std::endl;
 
 				UTIL* util = new UTIL();
